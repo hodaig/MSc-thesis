@@ -15,54 +15,57 @@ Supervisor: Dr. Gera Weiss}
 
 
 
-\section{Thesis Research Subject}
-This research continues/completes the work of Merav Bukra~[1] on scheduling computations in embedded control systems.
-in her thesis she present an approach and a proof-of-concept tool for scheduling computations resources,
-in this reaserch we intended to develop an resources scheduler for real-life control model (see 3.1 - controller model in our mind),
-and upgrade the controling software (APM) of a well-known quad-copter by replacing it's RT-scheduler with our new scheduler,
-we expect an improvement in CPU utilisation that resout in improvment of stability of the drone.
-
-
-\section{Background}
-Today’s computer power allows for consolidation of controllers where a computer can regulate many control loops,
-each with its varying needs of computation resources.
-this incrising number of control loops brings two problems that we intend to attack:
+\section{Background and Problem Formulation}
+\label{sec:problem}
+Today’s computer power allows for consolidation of controllers where a single computer can regulate many control loops, each with its varying needs of computation resources.
+This brings two research challenges that we intend to attack in the proposed thesis:
 \begin{itemize}
-\item How to schedule all the control tasks in order to achive good controlling characteristics?
-\item How should the control Eng. that desing an individual control loop (task), and the software Eng. that desing the tasks scheduler, should communicate?
+	\item How to schedule control tasks in order to achieve good performance in terms of control measures (overshoot, convergence speed, etc.)?
+	\item What is a good interface for co-design of scheduling and control?
 \end{itemize}
 
-\subsection{How to schedule all the control tasks}
-Although scheduling is a well researched area, and numerous articles and books have been published, classical scheduling theory is not yet adopted to work in the context of control systems.
-most of the scheduling concepts can be characterised as one of two types:
-\begin{enumerate}
-\item \textbf{Dynamic Schedule}{
-this is the common use scheduling method in desktop operation systems (eg. Windows, Linux), 
-the main approach here is the efficiency of the CPU usage.
-}
-\item \textbf{Real-Time schedule}{
-, such as embedded systems for automatic control (for example robotics), 
-scheduling is guided by specifications of \textbf{periods} and \textbf{deadlines}, the scheduler must ensure that processes can meet deadlines. this limitations are for keeping the system stable but usually not efficient.
-}
-\end{enumerate}
-in this thesis we will suggest a technique to combine the efficiency of desktop operating systems with the predictability of real-time operating systems,
-in a way that is more convenient for control systems then periods and deadlines (see section TODO ).
+While it is possible to build control systems using standard operating systems, either real-time or desktop with static or with dynamic scheduling schemes, there is an agreed opinion in the control community that these do not serve well for the purpose outlined above~\cite{?}. Specifically, desktop type operating systems (Windows, Linux, etc.) schedule for computational efficiency, but do not allow for control performance guarantees of the individual loops. On the other hand, real-time operating systems sacrifice some efficiency for timing predictability, but they do relate timing information with control performance. When using such operating systems for control engineers usually apply controllers that work in a fixed periodic manner so that control behavior becomes deterministic and control performance can be guaranteed. This is not efficient because resources can be better utilized if controllers act at higher frequencies when only when needed. 
+In this work we will develop methods to combine the efficiency of desktop operating systems with the predictability of real-time operating systems in a way that is more suitable for control systems then periods and deadlines
 
-\subsection{How to communicate}
-control systems are Real-Time systems and as describe in the previous section (TODO), mostly the control Eng. design the control task as a periodic computation, then specify the required periodic frequency for the task. then when the software Eng. design the scheduler he must ensure that the periodic frequency requirements are meets, mostly use a pre-computed knowledge of the expected (maximum) duration of the task.
+%Although scheduling is a well researched area, covered in many research papers and books, existing scheduling theory is not yet fully adopted to work in the context of control systems~\cite{?}.
+%In the engineering practice, typically, scheduling mechanisms can be characterized as one of two types:
+%\begin{description}
+%	\item[Dynamic Schedule:]{
+%		a commonly uses scheduling method in desktop operation systems (eg. Windows, Linux) that aims at efficiency of CPU usage.
+%	}
+%	
+%	\item[Real-Time schedule:]{
+%		such as embedded systems for automatic control (for example robotics), 
+%		scheduling is guided by specifications of \textbf{periods} and \textbf{deadlines}, the scheduler must ensure that processes can meet deadlines. this limitations are for keeping the system stable but usually not efficient.
+%	}
+%\end{description}
+%in this thesis we will suggest a technique to combine the efficiency of desktop operating systems with the predictability of real-time operating systems,
+%in a way that is more suitable for control systems then periods and deadlines (see section TODO ).
 
-we claim that in control systems we can achieve better performance by using more rich and flexible set of requirements for the task.
-we will focus in general model of physical controlled system,
-this called feedback systems, where a control loop, including sensors, control algorithms and actuators.
-(TODO add basic feedback loop figure)
+The control loops that we are analyzing are here of the form shown in Figure~\ref{fig:control loop}. A physical plant (controlled system) is connected via sensors and actuators... % Gera: explain the figure
 
-in this thesis we suggest a novel technique where the control loop is composed (as usual) from control tasks and state estimation tasks.
-and the requirement of the periodical requirements of the control tasks dynamically change and depend on the level of the environmental noise that is expressed by the accuracy of the state estimation (retrieve from estimation loops) and the stability of the system (retrieve from the control loop).
+The current state of the art is that control engineers design control tasks as periodic computations then they specify the required periodic frequency for the task and software engineers design a scheduler that ensures that the periodic frequency requirements are met usually using pre-computed knowledge of the expected (maximum) duration of the tasks.
+We claim that for control systems we can achieve better performance by using richer and more flexible set of requirements for the tasks. Specifically, we will develop tools with which the control engineers can specify in a natural way features of their control loop that the scheduler will use to allow for dynamic schedules that guarantee required control performance. 
 
 
-\section{our intention}
-\subsection{the controller model in our mind}
-TODO - basic close controlling loop
+%In this thesis we suggest a novel technique where the control loop is composed (as usual) from control tasks and state estimation tasks. 
+%And the requirement of the periodical requirements of the control tasks dynamically change and depend on the level of the environmental noise that is expressed by the accuracy of the state estimation (retrieve from estimation loops) and the stability of the system (retrieve from the control loop).
+
+\section{Case study: Vision based controllers for drones}
+
+
+
+\section{Research Plan}
+
+
+
+
+
+% Gera: Use bibtex 
+%This research continues/completes the work of Merav Bukra~[1] on scheduling computations in embedded control systems.
+%In her thesis Merav presented an approach and a proof-of-concept tool for scheduling computation resources in control software. The tool was good enough for demonstrating the concept with simulations, but it did not integrate with any real-life system. In this research we will develop a resource scheduler for real-life control model (see~\ref{sec:contmode}),
+%and upgrade the control software (APM) of a well-known quad-copter by replacing it's RT-scheduler with our new scheduler.
+%We expect an improvement in CPU utilization that will allow improvements of stability of the drone.
 
 \subsection{the controller control system framework}
 our proposal.
