@@ -1,0 +1,94 @@
+\documentclass[11pt]{article}
+
+\author{Hodai Goldman (Hodaig@cs.bgu.ac.il) \\
+Department of Computer Science, \\
+Ben-Gurion University of the Negev, Beer Sheva, Israel \\
+Supervisor: Dr. Gera Weiss}
+\date{\today}
+\title{Research Proposal: Computational resource management of multi channel controller}
+
+\begin{document}
+\begin{titlepage}
+\maketitle
+\end{titlepage}
+
+
+
+
+\section{Thesis Research Subject}
+This research continue/complete the work of Merav [1] on scheduling computations in embedded control systems.
+in her thesis she present an approach and a proof-of-concept tool for scheduling computations resources,
+in this reaserch we intended to develop an resources scheduler for real-life control model (see 3.1 - controller model in our mind),
+and upgrade the controling software (APM) of a well-known quad-copter by replacing it's RT-scheduler with our new scheduler,
+we expect an improvement in CPU utilisation that resout in improvment of stability of the drone.
+
+
+\section{Background}
+today’s computer power allows for consolidation of controllers where a computer can regulate many control loops,
+each with its varying needs of computation resources.
+this incrising number of control loops brings two problems that we intend to attack:
+\begin{itemize}
+\item How to schedule all the control tasks in order to achive good controlling characteristics?
+\item How should the control Eng. that desing an individual control loop (task), and the software Eng. that desing the tasks scheduler, should communicate?
+\end{itemize}
+
+\subsection{How to schedule all the control tasks}
+Although scheduling is a well researched area, and numerous articles and books have been published, classical scheduling theory is not yet adopted to work in the context of control systems.
+most of the scheduling concepts can be characterised as one of two types:
+\begin{enumerate}
+\item \textbf{Dynamic Schedule}{
+this is the common use scheduling method in desktop operation systems (eg. Windows, Linux), 
+the main approach here is the efficiency of the CPU usage.
+}
+\item \textbf{Real-Time schedule}{
+, such as embedded systems for automatic control (for example robotics), 
+scheduling is guided by specifications of \textbf{periods} and \textbf{deadlines}, the scheduler must ensure that processes can meet deadlines. this limitations are for keeping the system stable but usually not efficient.
+}
+\end{enumerate}
+in this thesis we will suggest a technique to combine the efficiency of desktop operating systems with the predictability of real-time operating systems,
+in a way that is more convenient for control systems then periods and deadlines (see section TODO ).
+
+\subsection{How to communicate}
+control systems are Real-Time systems and as describe in the previous section (TODO), mostly the control Eng. design the control task as a periodic computation, then specify the required periodic frequency for the task. then when the software Eng. design the scheduler he must ensure that the periodic frequency requirements are meets, mostly use a pre-computed knowledge of the expected (maximum) duration of the task.
+
+we claim that in control systems we can achieve better performance by using more rich and flexible set of requirements for the task.
+we will focus in general model of physical controlled system,
+this called feedback systems, where a control loop, including sensors, control algorithms and actuators.
+(TODO add basic feedback loop figure)
+
+in this thesis we suggest a novel technique where the control loop is composed (as usual) from control tasks and state estimation tasks.
+and the requirement of the periodical requirements of the control tasks dynamically change and depend on the level of the environmental noise that is expressed by the accuracy of the state estimation (retrieve from estimation loops) and the stability of the system (retrieve from the control loop).
+
+
+\section{our intention}
+\subsection{the controller model in our mind}
+TODO - basic close controlling loop
+
+\subsection{the controller control system framework}
+our proposal.
+
+TODO - add the figure from the poster and few words of this model
+TODO - maybe add \%CPU arrow from scheduler to control law 
+
+\subsubsection{Sensors (Computer Vision Based Sensor)}
+\subsubsection{State Estimator}
+\subsubsection{Control Tasks}
+\subsubsection{Automata Based Scheduler}
+
+\subsection{experimental environment}
+\subsubsection{drones}
+\subsubsection{Ardu-Pilot-Mega as base controller software}
+
+\section{Preliminary Results}
+
+\section{References}
+\begin{enumerate}
+\item \textbf{Merav Bukra (thesis), GameComposer: A Framework for Dynamic Scheduling}
+\item Rajeev Alur and Gera Weiss, RTComposer: A Framework for Real-Time Components with Scheduling Interfaces
+\item APM
+\end{enumerate}
+
+
+
+
+\end{document}}
