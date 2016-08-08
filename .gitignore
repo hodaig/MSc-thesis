@@ -1,0 +1,13 @@
+#temp
+*.pyg
+*.swp
+*.aux
+*.*~
+*.blg
+*.log
+*.bbl
+
+#others
+old
+
+*.gz
