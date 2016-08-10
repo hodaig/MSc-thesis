@@ -13,7 +13,7 @@
 \tikzstyle{arrowG} = [ultra thick,->,>=stealth,draw=green, dashed]
 
 %\usepackage{float}
-\usepackage{etoolbox}
+%\usepackage{etoolbox}
 %\usepackage{cite}
 \usepackage{url}
 %\patchcmd{\thebibliography}{\section*}{\section}{}{}
@@ -81,6 +81,11 @@ To test our concepts, we will examine their implementation in the context of a s
 
 In Section \ref{sec:Research Plan} we suggest a novel framework model for such systems that we will implement in this thesis.
 
+\subsection{Nano-Satellite}
+Another interesting case study is the controlling of nano-satellite, in particular scheduling the sensing tasks of IAI (Israel Aerospace Industries) nano satellites. Their Satellites are controlled by very small and slower processor, and the developers say that the main issue in programing the satellite is how to schedule the sensing tasks.
+The common approach they are using is to periodically schedule all the sensing task every iteration, and they say that this is the main computational consumption and is too much for their slow processor.
+
+We think that lots of the sensing are unnecessary and the controlling task can be achieved without "most up-to-date" information, some times we can base on good estimation of the sensing value or even use the last value. Although Vision based drones is our main case study, we will also check the possibility to improve the nano-satellite issue with our framework.
 
 \section{Research Plan}
 \label{sec:Research Plan}
@@ -170,6 +175,7 @@ Finally, we need to re-consider the system Analyzing technique because variable 
 \label{sec:sensors}
 %Anitime reserch of zilbershtain (\cite{Shlomo})
 %contract based
+%http://ardupilot.org/copter/docs/common-mouse-based-optical-flow-sensor-adns3080.html
 
 $Computer~Vision~Based~Sensor$ is the module that is responsible for taking picture or series of pictures and produce the goal measurement.
 In our research we will use the $Computer~Vision$ in order to detect two dimensional movement in the camera surface (i.e. the drone speed).
@@ -193,6 +199,7 @@ In our implementation, in order to lower the complexity, we will pre-define few 
 %TODO - ???
 
 \subsubsection{Automata Based Scheduler}
+
 %This research continues/completes the work of Merav Bukra ~\cite{Merav} on scheduling computations in embedded control systems.
 %In her thesis Merav presented an approach and a proof-of-concept tool for scheduling computation resources in control software. The tool was good enough for demonstrating the concept with simulations, but it did not integrate with any real-life system. In this research we will develop a resource scheduler for real-life control model (see~\ref{sec:contmode}),and upgrade the control software (APM) of a well-known quad-copter by replacing it's RT-scheduler with our new scheduler.
 %We expect an improvement in CPU utilization that will allow improvements of stability of the drone.
