@@ -82,7 +82,7 @@ To test our concepts, we will examine their implementation in the context of a s
 In Section \ref{sec:Research Plan} we suggest a novel framework model for such systems that we will implement in this thesis.
 
 \subsection{Nano-Satellite}
-Another interesting case study is the controlling of nano-satellite, in particular scheduling the sensing tasks of IAI (Israel Aerospace Industries) nano satellites. Their Satellites are controlled by very small and slower processor, and the developers say that the main issue in programing the satellite is how to schedule the sensing tasks.
+Another interesting case study is the controlling of nano-satellite, in particular scheduling the sensing tasks of \textit{IAI}\footnote{IAI: Israel Aerospace Industries} nano satellites. Their Satellites are controlled by very small and slower processor, and the developers say that the main issue in programing the satellite is how to schedule the sensing tasks.
 The common approach they are using is to periodically schedule all the sensing task every iteration, and they say that this is the main computational consumption and is too much for their slow processor.
 
 We think that lots of the sensing are unnecessary and the controlling task can be achieved without "most up-to-date" information, some times we can base on good estimation of the sensing value or even use the last value. Although Vision based drones is our main case study, we will also check the possibility to improve the nano-satellite issue with our framework.
@@ -194,9 +194,15 @@ In our implementation, in order to lower the complexity, we will pre-define few 
 \subsubsection{State Estimator}
 \label{sec:estimator}
 % kalman filter & ...
+% seperation rule of kalman
+%TODO - complete
 
 \subsubsection{Control Tasks}
-%TODO - ???
+The control task himself ($Control Law$) is responsible to reduce the difference between current state ($x$) where $\tilde{x} = x+ "estimation~error"$ (in Figure \ref{fig:general_hybrid_loop}) and target state ($u$ in Figure \ref{fig:general_hybrid_loop}), by changing the drone motors speed.
+This task is usually a very low CPU consumer and been well studied \cite{?? PID}, hence, in this thesis we will use a well known technique from control theory called {\textbf{PID}\footnote{PID controller - A proportional-integral-derivative controller}}. 
+In this technique the control output is based on the physical knowledge of the system dynamics, and have 3 variable parameters (P, I and D) that define the controller convergence behavior. 
+This is also the technique used in the APM software (Section \ref{sec:APM}) that we will use and we will not change it.
+%TODO - maybe add explanation on how this task can be envolved in the scheduling desision
 
 \subsubsection{Automata Based Scheduler}
 
@@ -207,6 +213,7 @@ In our implementation, in order to lower the complexity, we will pre-define few 
 \subsection{Experimental environment}
 \subsubsection{Drones}
 \subsubsection{Ardu-Pilot-Mega as base controller software}
+\label{sec:APM}
 
 \section{Preliminary Results}
 Blablabla said Nobody ~\cite{Merav}.
