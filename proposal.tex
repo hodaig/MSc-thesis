@@ -2,7 +2,7 @@
 
 \usepackage{graphicx}
 \usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows}
+\usetikzlibrary{shapes.geometric, arrows, automata, positioning}
 \tikzstyle{recNode} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, rounded corners=0.1cm, draw=black]
 \tikzstyle{recNodeB} = [recNode, draw=blue, fill=blue!10,text=blue!20!black]
 \tikzstyle{recNodeG} = [recNode, draw=red, fill=red!10,text=red!10!black]
@@ -151,7 +151,7 @@ Our research plan consists of: (1) Designing a methodology for effective allocat
     \end{tikzpicture}
     
     \caption{The controller framework we will implement, the $scheduler$ will allocate CPU time ($<time,cov>$) for the  $Computer Vision$ task base on the state estimation certainty using guarded Automata.
-    \label{fig:hybrid loop}}
+    \label{fig:hybrid_loop}}
 \end{figure}
 
 \subsection{The proposed methodology}
@@ -165,16 +165,16 @@ The current state of art is that the designers of each control loop specify a fi
 In our methodology, shown in Figure~\ref{fig:general_hybrid_loop}, there is a strong relation between the $Scheduler$ and the control loops. We suggest that each control loop (blue components) will tell the resource allocator ($scheduler$) its level of certainty and the allocator will allocate the CPU time among all the control loops corresponding to the loops certainty in order to maintain some pre-defined specifications of state certainty or stability.
 
 Our proposal is general and may be applicable in a wide range of applications. However, in this initial phase of the research, we believe that it is better to focus on a specific sub-domain and solve all technical issues in order to prove the concept.
-In this thesis we will develop and implement the framework shown in Figure~\ref{fig:hybrid loop}: a vision based controller for drone. 
+In this thesis we will develop and implement the framework shown in Figure~\ref{fig:hybrid_loop}: a vision based controller for drone. 
 
 % TODO: Use $ only for math. furmulas
-As shown in Figure~\ref{fig:hybrid loop}, the suggested control system framework have strong relation between the tasks scheduler to the control loops, in this case the estimation task ($State~Estimation$) accuracy strongly depends on the sensing task ($Computer~Vision$) and there both collaborate with the $scheduler$ in order to achieve they \textbf{control objectives} (g.e. stability).
+As shown in Figure~\ref{fig:hybrid_loop}, the suggested control system framework have strong relation between the tasks scheduler to the control loops, in this case the estimation task ($State~Estimation$) accuracy strongly depends on the sensing task ($Computer~Vision$) and there both collaborate with the $scheduler$ in order to achieve they \textbf{control objectives} (g.e. stability).
 In this framework the scheduler is part of the control logic and therefore it can make scheduling decisions based on the current control state, the scheduling of $Computer~Vision$ task is depends on the accuracy of state estimation.
 For example if the vision is clear the $Computer~Vision$ will produce good measurement of the $System$ and therefore good accuracy will be achieved so the $Scheduler$ can allocate less computation time to the heavy $Computer~Vision$ task and still remain stable and allocate more CPU to others control loops or some background tasks (like navigation).
 
 The above collaboration requires to re-adjust some parts of the controlling system, e.g. the $State~Estimator$ needs to work with variable error covariance of $Computer~Vision$ measurement and the $Computer~Vision$ needs to be able run within variable time limits, and also the tasks pre-defined requirements need to be re-adjust in order to define the relation between tasks, like $Computer~Vision$ and $State~Estimator$.
 Below we will dive in each part of the above system (Figure~
-ef{fig:hybrid loop}) and explain how it will be adjusted (changed) and how we will achieve that adjustment in our demonstration.
+\ref{fig:hybrid_loop}) and explain how it will be adjusted (changed) and how we will achieve that adjustment in our demonstration.
 
 Finally, we need to re-consider the system Analyzing technique because variable sensing characteristics ($Computer~Vision$ time limits) will lead to variable estimation characteristics... %TODO - complete and fix this paragraph or remove it
 
@@ -206,7 +206,8 @@ In our implementation, in order to lower the complexity, we will pre-define few 
 %TODO - complete
 
 \subsubsection{Control Tasks}
-% TODO: LQR instead (or in addition?) of PID
+\label{sec:control}
+%TODO: gera - LQR instead (or in addition?) of PID
 The control task itself ($Control Law$) is responsible for reducing the difference between the current state ($x$) where $\tilde{x} = x+ ``estimation~error"$ (in Figure~\ref{fig:general_hybrid_loop}) and the target state ($u$ in Figure~\ref{fig:general_hybrid_loop}), by changing the drone motors speed.
 This task is usually a very low CPU consumer and been well studied~\cite{PID}, hence, in this thesis we will use a well known technique from control theory called {\textbf{PID}\footnote{PID controller - A proportional-integral-derivative controller}}. 
 In this technique the control output is based on the physical knowledge of the system dynamics, and have 3 variable parameters (P, I and D) that define the controller convergence behavior. 
@@ -214,18 +215,99 @@ This is also the technique used in the APM software (Section~
 ef{sec:APM}) that we will use and we will not change it.
 %TODO - maybe add explanation on how this task can be envolved in the scheduling desision
 
-\subsubsection{Automata Based Scheduler}
+\subsubsection{Computation Resource Scheduler: Automata Based Scheduler}
+\label{sec:scheduler}
+%TODO ~\cite{RTComposer}
+%TODO ~\cite{Merav}
+
+Real-time systems are mostly composed of multiple real-time tasks, tasks with time constraint, for example task that must response within specified time constraints. 
+The purpose of scheduler is to allocate the limited computational resources (CPU time) within all the task in the system, in real-time systems the scheduler must allocate each task enough resources to overcome that task's time constraints, to do so, we must have well defined communication interface between the real-time tasks and the scheduler.
+
+The most common way of describing the requirements of a real-time component is to specify a period, sometimes along with a deadline, which gives the frequency at which the component must execute. The designer of the component makes sure that the performance objectives will be met as long as the component is executed consistent with its period. %not directly in this article
+Specifying resource requirements using periods has advantages due to simplicity and analyzability, but has limited expressiveness \cite{RTComposer}. 
+%For example, a specification such as “execute the component every 5ms” does not say whether the scheduler should or should not execute it more frequently if enough computing resources are available, and if a component has multiple methods, say, for different control tasks, each needing a different period, the requirement cannot be naturally captured by a single period.
+
+In this thesis one of the main subjects, as we said above (Section~\ref{sec:Research Plan}), is to develop a methodology for allocation resources, we will focus on how should engineers describe the requirements of a real-time component.
+We will develop automata based methodology and scheduler based on the work of Rajeev~\cite{RTComposer} and Merav~\cite{Merav}, and demonstrate how they improve the controlling of real fling drones (Section~\ref{sec:enviroment}).
+We will use finite automata over infinite words as specification framework for resource requirements, automata can be more expressive, for describe more specific requirements, and they are composable, it is easy to compose all the tasks requirements into one automata. 
+
+Each infinite path on the composed automata is a scheduling that satisfy all the tasks requirements. To simplify, We will assume that the resource is allocated in discrete slots of some fixed duration in the style of time-triggered architecture~\cite{RTComposer}. %TODO - Hodai: fix this centence
+In this architecture the scheduler only need to ``walk through'' the composed automata, this is of course fast and easy computational task. 
+In order to assure that we not exceed the time slot duration, each task will have pre-defined maximum duration time like ``deadline'' in the traditional architecture.Now we can verify all the possible scheduling steps of a single time slot (all the transitions of the composed automata), we can summarize the total slot ``deadline'' as follows:\\
+$\forall edge~e ~~(\sum_{t \in Guard(e)} deadline(t) ) \leq slot~duration$ \\
+if we find edge $e$ that (slot scheduling step) that goes beyond the maximum duration we will remove it from the automata so we never exceed the time slot duration.
+
+
+\begin{figure}[]
+    \centering
+    
+    \begin{tikzpicture}[node distance=4cm,auto]
+        \node (A) [state, accepting, initial] {};
+        \node (B) [state, accepting] [right of=A] {};
+        \node (C) [state, accepting] [right of=B] {};
+        
+        \path[->] (A) edge [loop above] node {$true \wedge s_{slow}$} (A);
+        \path[->] (A) edge [bend left] node {$\neg est_{Bad} \wedge s_{fast}$} (B);
+        \path[->] (B) edge [bend left] node {$true \wedge s_{slow}$} (A);
+        %\path[->] (B) edge [loop above] node {$\neg cov3$} (B);
+        \path[->] (B) edge [bend left] node {$est_{good} \wedge s_{fast}$} (C);
+        %\path[->] (C) edge [loop above] node {$cov1$} (C);
+        \path[->] (C) edge [bend left=60] node {$true \wedge s_{slow}$} (A);
+                
+
+    \end{tikzpicture}
+    
+    \caption{Example of guarded automata for our vision based sensor task, in this example the task has two operation modes, $\mathbf{s_{slow}}$ which perform slow but more accurate vision computation and $\mathbf{s_{fast}}$ which is less accurate but faster, every time slot exactly one of the mode will be executed.
+    \label{fig:sched_sense_auto}}
+\end{figure}
+
+\begin{figure}[]
+    \centering
+    
+    \begin{tikzpicture}[node distance=4cm,auto]
+        \node (A) [state, accepting, initial] {};
+        %\node (B) [state, accepting] [right of=A] {};
+        
+        \path[->] (A) edge [loop above] node {$s_{slow} \wedge est_1$} (A);
+        %\path[->] (A) edge [bend left] node {$s_{fast} \wedge est_2$} (B);
+        %\path[->] (B) edge [loop above] node {$s_{fast} \wedge est_2$} (B);
+        \path[->] (A) edge [loop right] node {$s_{fast} \wedge est_2$} (A);
+        %\path[->] (B) edge [bend left] node {$s_{slow} \wedge est_1$} (A);
+
+    \end{tikzpicture}
+    
+    \caption{Example of guarded automata for our state estimator, in this example the estimator has two operation modes, $\mathbf{est_1}$ correspond to $\mathbf{s_{slow}}$~(Figure \ref{fig:sched_sense_auto}) and $\mathbf{est_2}$ correspond to $\mathbf{s_{fast}}$~(Figure \ref{fig:sched_sense_auto}).
+    \label{fig:sched_estimator_auto}}
+\end{figure}
+
+Let's take for example of that automata based interface for the system in Figure~\ref{fig:hybrid_loop}.
+Assume we have two operation modes of the vision based sensor, (1) $s_{slow}$ a very accurate operation mode that takes significant amount of time to execute, 
+and (2) $s_{fast}$ a less accurate operation mode but takes less time to execute.
+In each time slot we can execute one of them and get the sensing process done, but if we use only $s_{slow}$ we may not have enough time to execute all the tasks, on the other hand if we use only $s_{fast}$ we will have Inferior estimates.
+Figure~\ref{fig:sched_sense_auto} shows an example guarded automata that guide the schedule, with the automata we can express reach specifications, in this example execute $s_{slow}$ is always allowed but if we need faster sensing we can use $s_{fast}$ but only once in a row if the estimation error is not bad, or even twice in a row if the estimation error is good.
+
+The estimation error ($est_{good}$ and $est_{bad}$) in the Figure is a function of the estimation error covariance ($cov(x-\tilde{x})$ in Figure~\ref{fig:hybrid_loop}), if $cov(x-\tilde{x})$ is small then $est_{good} = true$, if is normal then $est_{normal} = true$ end $est_{bad} = true$ if $cov(x-\tilde{x})$ is  bigger then some boundary.
+This value ($cov(x-\tilde{x})$) is calculated by the state estimator task (Section~\ref{sec:estimator}).
+
+Each of this operation modes ($s_{slow}$ and $s_{fast}$) have different accuracy, noted by $cov(v)$ in Figure~\ref{fig:hybrid_loop}, and if we want to get optimal estimation the state estimator mast be configure correspondingly, i.e the sensing error covariance should be adjusted to the correct value ($s_{slow}$), an easy solution for specifyng this is by the guarded automata in Figure~\ref{fig:sched_estimator_auto}, which define two operetion modes of the state estimator, $est_1$ and $est_2$, that correspond to $cov(s_{slow})$ and $cov(s_{fast})$. So of course if we sense in mode $s_{slow}$ we must estimate with mode $est_1$, and if we sense in mode $s_{fast}$ we must estimate with mode $est_2$.
+
+
+%TODO basic periodic
+
 
 %This research continues/completes the work of Merav Bukra ~\cite{Merav} on scheduling computations in embedded control systems.
 %In her thesis Merav presented an approach and a proof-of-concept tool for scheduling computation resources in control software. The tool was good enough for demonstrating the concept with simulations, but it did not integrate with any real-life system. In this research we will develop a resource scheduler for real-life control model (see~\ref{sec:contmode}),and upgrade the control software (APM) of a well-known quad-copter by replacing it's RT-scheduler with our new scheduler.
 %We expect an improvement in CPU utilization that will allow improvements of stability of the drone.
 
 \subsection{Experimental environment}
+\label{sec:enviroment}
 \subsubsection{Drones}
+\label{sec:drones}
 \subsubsection{Ardu-Pilot-Mega as base controller software}
 \label{sec:APM}
 
 \section{Preliminary Results}
+\label{sec:results}
 Blablabla said Nobody ~\cite{Merav}.
 Blablabla said Nobody ~\cite{APM}.
 Blablabla said Nobody ~\cite{RTComposer}.
