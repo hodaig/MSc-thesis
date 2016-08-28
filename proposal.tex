@@ -1,3 +1,5 @@
+%TODO Hodai: get rid of the CPU (use processor/computational time...)
+
 \documentclass[11pt]{article}
 
 \usepackage{graphicx}
@@ -26,7 +28,6 @@
 \begin{titlepage}
 \maketitle
 \end{titlepage}
-
 
 
 
@@ -79,7 +80,10 @@ We claim that for control systems we can achieve better performance by using ric
 \subsection{Vision based controllers for drones}
 To test our concepts, we will examine the implementation of an autonomously flying quad-rotor in the context of an agriculture case study. Specifically, we will implement a quad-rotor that flies in corridors and greenhouses by a vision based feedback. The challenge in this case study, from our perspective, is that image processing is a heavy computational task that requires careful scheduling in order to preserve the system predictability and stability.
 
-%TODO Gera: some bla-bla about the current state of the art and how we will improve it. 
+%DONE Gera: some bla-bla about the current state of the art and how we will improve it. 
+The current state-of-the-art solution of involving heavy computational tasks, e.g vision, in the control system is simply by adding computational power to the system (use faster processor), usually lots more than needed in order to eliminate the chance of loosing predictability.
+Some more conservative control engineers prefers to isolate the heavy computation from the core control loop by allocating one of the processor's core for that task, or even run the vision processing on different computer (See how APM suggest to use computer vision abilities, Section~\ref{sec:APM_suported_vision})
+
 
 In Section~\ref{sec:Research Plan} we suggest a novel framework model for such systems that we will implement in this thesis.
 
@@ -126,7 +130,6 @@ Our research plan consists of: (1) Designing a methodology for effective allocat
 \begin{figure}[h]
     \centering
     %TODO - maybe add \%CPU arrow from scheduler to control law 
-    %TODO - replace with tikzpicture
     \begin{tikzpicture}[node distance=2cm]
         \node (in) [eNode] {Input};
         \node (control) [recNodeB, right of=in, xshift=1cm, text width=3cm] 
@@ -150,7 +153,7 @@ Our research plan consists of: (1) Designing a methodology for effective allocat
         
     \end{tikzpicture}
     
-    \caption{The controller framework we will implement, the $scheduler$ will allocate CPU time ($<time,cov>$) for the  $Computer Vision$ task base on the state estimation certainty using guarded Automata.
+    \caption{The controller framework we will implement, the \textit{scheduler} will allocate CPU time ($<time,cov>$) for the \textit{Computer Vision} task base on the state estimation certainty using guarded Automata.
     \label{fig:hybrid_loop}}
 \end{figure}
 
@@ -162,34 +165,32 @@ The methodology comes to support an efficient scheduling protocols in modern con
 The current state of art is that the designers of each control loop specify a fixed rate for invocations of the corresponding control task.
 %That methodology is based on modern controller architecture where the system has multiple controlling tasks (control loops) and a scheduler that schedule the task as they demand.
 % TODO: Use the terminology of the figure
-In our methodology, shown in Figure~\ref{fig:general_hybrid_loop}, there is a strong relation between the $Scheduler$ and the control loops. We suggest that each control loop (blue components) will tell the resource allocator ($scheduler$) its level of certainty and the allocator will allocate the CPU time among all the control loops corresponding to the loops certainty in order to maintain some pre-defined specifications of state certainty or stability.
+In our methodology, shown in Figure~\ref{fig:general_hybrid_loop}, there is a strong relation between the \textit{Scheduler} and the control loops. We suggest that each control loop (blue components) will tell the resource allocator (\textit{scheduler}) its level of certainty and the allocator will allocate the CPU time among all the control loops corresponding to the loops certainty in order to maintain some pre-defined specifications of state certainty or stability.
 
 Our proposal is general and may be applicable in a wide range of applications. However, in this initial phase of the research, we believe that it is better to focus on a specific sub-domain and solve all technical issues in order to prove the concept.
 In this thesis we will develop and implement the framework shown in Figure~\ref{fig:hybrid_loop}: a vision based controller for drone. 
 
-% TODO: Use $ only for math. furmulas
-As shown in Figure~\ref{fig:hybrid_loop}, the suggested control system framework have strong relation between the tasks scheduler to the control loops, in this case the estimation task ($State~Estimation$) accuracy strongly depends on the sensing task ($Computer~Vision$) and there both collaborate with the $scheduler$ in order to achieve they \textbf{control objectives} (g.e. stability).
-In this framework the scheduler is part of the control logic and therefore it can make scheduling decisions based on the current control state, the scheduling of $Computer~Vision$ task is depends on the accuracy of state estimation.
-For example if the vision is clear the $Computer~Vision$ will produce good measurement of the $System$ and therefore good accuracy will be achieved so the $Scheduler$ can allocate less computation time to the heavy $Computer~Vision$ task and still remain stable and allocate more CPU to others control loops or some background tasks (like navigation).
+As shown in Figure~\ref{fig:hybrid_loop}, the suggested control system framework have strong relation between the tasks scheduler to the control loops, in this case the estimation task (\textit{State~Estimation}) accuracy strongly depends on the sensing task (\textit{Computer~Vision}) and there both collaborate with the \textit{scheduler} in order to achieve they \textbf{control objectives} (g.e. stability).
+In this framework the scheduler is part of the control logic and therefore it can make scheduling decisions based on the current control state, the scheduling of \textit{Computer~Vision} task is depends on the accuracy of state estimation.
+For example if the vision is clear the \textit{Computer~Vision} will produce good measurement of the \textit{System} and therefore good accuracy will be achieved so the \textit{Scheduler} can allocate less computation time to the heavy \textit{Computer~Vision} task and still remain stable and allocate more CPU to others control loops or some background tasks (like navigation).
 
-The above collaboration requires to re-adjust some parts of the controlling system, e.g. the $State~Estimator$ needs to work with variable error covariance of $Computer~Vision$ measurement and the $Computer~Vision$ needs to be able run within variable time limits, and also the tasks pre-defined requirements need to be re-adjust in order to define the relation between tasks, like $Computer~Vision$ and $State~Estimator$.
-Below we will dive in each part of the above system (Figure~
-\ref{fig:hybrid_loop}) and explain how it will be adjusted (changed) and how we will achieve that adjustment in our demonstration.
+The above collaboration requires to re-adjust some parts of the controlling system, e.g. the \textit{State~Estimator} needs to work with variable error covariance of \textit{Computer~Vision} measurement and the \textit{Computer~Vision} needs to be able run within variable time limits, and also the tasks pre-defined requirements need to be re-adjust in order to define the relation between tasks, like \textit{Computer~Vision} and \textit{State~Estimator}.
+Below we will dive in each part of the above system (Figure~\ref{fig:hybrid_loop}) and explain how it will be adjusted (changed) and how we will achieve that adjustment in our demonstration.
 
-Finally, we need to re-consider the system Analyzing technique because variable sensing characteristics ($Computer~Vision$ time limits) will lead to variable estimation characteristics... %TODO - complete and fix this paragraph or remove it
+Finally, we need to re-consider the system Analyzing technique because variable sensing characteristics (\textit{Computer~Vision} time limits) will lead to variable estimation characteristics... %TODO - complete and fix this paragraph or remove it
 
-\subsubsection{Sensors ($Computer~Vision~Based~Sensor$)}
+\subsubsection{Sensors (\textit{Computer~Vision~Based~Sensor})}
 \label{sec:sensors}
 %Anitime reserch of zilbershtain (\cite{Shlomo})
 %contract based
 %http://ardupilot.org/copter/docs/common-mouse-based-optical-flow-sensor-adns3080.html
 
-$Computer~Vision~Based~Sensor$ is the module that is responsible for taking picture or series of pictures and for producing measurements of quantities such as speed and position relative to the environment.
-In our research we will use the $Computer~Vision$ in order to detect two dimensional movement in the camera surface (i.e. the drone speed).
+\textit{Computer~Vision~Based~Sensor} is the module that is responsible for taking picture or series of pictures and for producing measurements of quantities such as speed and position relative to the environment.
+In our research we will use the \textit{Computer~Vision} in order to detect two dimensional movement in the camera surface (i.e. the drone speed).
 There are many such algorithms (optical flow), they differ by their running time and by the accuracy of the solution, mostly more time lead to more accuracy.
 
-In our case we need to be able to control the $Computer~Vision$ running time and to have some good knowledge of the solution accuracy in order to achieve optimal state estimation (see Section~\ref{sec:estimator}).
-We assume that the $Computer~Vision$ error is spread normally, and we will use the error covariance as the solution accuracy. 
+In our case we need to be able to control the \textit{Computer~Vision} running time and to have some good knowledge of the solution accuracy in order to achieve optimal state estimation (see Section~\ref{sec:estimator}).
+We assume that the \textit{Computer~Vision} error is spread normally, and we will use the error covariance as the solution accuracy. 
 We believe that this is a reasonable  assumption because it is the sum of many independent random variables, as follows. Optic flow algorithms usually go by identifying similar regions in consecutive pictures and then averaging the distances that each feature ``traveled''. Assuming that the error in measurement of each feature is independent of the other errors, we get that the total error is the average of independent random variables. We will validate this assumption by experimentation with different parameters of different algorithms.
 
 %TODO - reed a litle the article (\cite{UPenn-Pant}) and re-write the next.
@@ -197,7 +198,7 @@ We believe that this is a reasonable  assumption because it is the sum of many i
 %TODO - Make sure that we use the terms contract-base and any-time correctly
 In order to control the running time, we will use a "contract based" vision algorithms proposed by Pant~\cite{UPenn-Pant}.
 This type of algorithms run until we stop them, and when we stop them they will provide a solution with accuracy that is proportional to the amount of time it was running. That way we can control the solution accuracy by controlling the running time.
-In our implementation, in order to lower the complexity, we will pre-define few different ``operation modes" of the $Computer~Vision$ task, that differ by their running time and they are identified by a pair $\langle RunTime, Covariance \rangle$ where $Covariance$ is the error covariance of running time $RunTime$.
+In our implementation, in order to lower the complexity, we will pre-define few different ``operation modes" of the \textit{Computer~Vision} task, that differ by their running time and they are identified by a pair $\langle RunTime, Covariance \rangle$ where $Covariance$ is the error covariance of running time $RunTime$.
 
 \subsubsection{State Estimator}
 \label{sec:estimator}
@@ -208,7 +209,7 @@ In our implementation, in order to lower the complexity, we will pre-define few 
 \subsubsection{Control Tasks}
 \label{sec:control}
 %TODO: gera - LQR instead (or in addition?) of PID
-The control task itself ($Control Law$) is responsible for reducing the difference between the current state ($x$) where $\tilde{x} = x+ ``estimation~error"$ (in Figure~\ref{fig:general_hybrid_loop}) and the target state ($u$ in Figure~\ref{fig:general_hybrid_loop}), by changing the drone motors speed.
+The control task itself (\textit{Control Law}) is responsible for reducing the difference between the current state ($x$) where $\tilde{x} = x+ ``estimation~error"$ (in Figure~\ref{fig:general_hybrid_loop}) and the target state ($u$ in Figure~\ref{fig:general_hybrid_loop}), by changing the drone motors speed.
 This task is usually a very low CPU consumer and been well studied~\cite{PID}, hence, in this thesis we will use a well known technique from control theory called {\textbf{PID}\footnote{PID controller - A proportional-integral-derivative controller}}. 
 In this technique the control output is based on the physical knowledge of the system dynamics, and have 3 variable parameters (P, I and D) that define the controller convergence behavior. 
 This is also the technique used in the APM software (Section~
