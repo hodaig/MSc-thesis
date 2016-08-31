@@ -222,14 +222,15 @@ This is also the technique used in the APM software (Section~\ref{sec:APM}) that
 %TODO ~\cite{Merav}
 
 Real-time systems are mostly composed of multiple real-time tasks, tasks with time constraint, for example task that must response within specified time constraints. 
-The purpose of scheduler is to allocate the limited computational resources (CPU time) within all the task in the system, in real-time systems the scheduler must allocate each task enough resources to overcome that task's time constraints, to do so, we must have well defined communication interface between the real-time tasks and the scheduler.
+The purpose of schedulers in such systems is to allocate the limited computational resources (CPU time) within all the task in the system. To do so, we need a well defined communication interface between the real-time tasks and the scheduler.
 
-The most common way of describing the requirements of a real-time component is to specify a period, sometimes along with a deadline, which gives the frequency at which the component must execute. The designer of the component makes sure that the performance objectives will be met as long as the component is executed consistent with its period. %not directly in this article
+The most common way of describing the requirements of a real-time component is to specify a period, sometimes along with a deadline, which gives the frequency at which the component must execute. The designer of the component makes sure that the performance objectives are met as long as the component is executed consistent with its period. The scheduler guarantees that all components get enough resources.
+%not directly in this article
 Specifying resource requirements using periods has advantages due to simplicity and analyzability, but has limited expressiveness \cite{RTComposer}. 
 %For example, a specification such as “execute the component every 5ms” does not say whether the scheduler should or should not execute it more frequently if enough computing resources are available, and if a component has multiple methods, say, for different control tasks, each needing a different period, the requirement cannot be naturally captured by a single period.
 
-In this thesis one of the main subjects, as we said above (Section~\ref{sec:Research Plan}), is to develop a methodology for allocation resources, we will focus on how should engineers describe the requirements of a real-time component.
-We will develop automata based methodology and scheduler based on the work of Rajeev~\cite{RTComposer} and Merav~\cite{Merav}, and demonstrate how they improve the controlling of real fling drones (Section~\ref{sec:enviroment}).
+In this thesis one of the main subjects, as we said above (Section~\ref{sec:Research Plan}), is to develop a methodology for allocation resources. We will focus on how should engineers describe the requirements of a real-time component.
+We will develop automata based methodologies and schedulers based on the work of Alur~\cite{RTComposer} and Bukra~\cite{Merav}, and will demonstrate with measurable data how they improve the performance of real flying drones (see Section~\ref{sec:enviroment}).
 We will use finite automata over infinite words as specification framework for resource requirements, automata can be more expressive, for describe more specific requirements, and they are composable, it is easy to compose all the tasks requirements into one automata. 
 
 Each infinite path on the composed automata is a scheduling that satisfy all the tasks requirements. To simplify, We will assume that the resource is allocated in discrete slots of some fixed duration in the style of time-triggered architecture~\cite{RTComposer}. %TODO - Hodai: fix this centence
