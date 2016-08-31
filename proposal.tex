@@ -1,4 +1,6 @@
 %TODO Hodai: get rid of the CPU (use processor/computational time...)
+%TODO Gera: Covariance -> Variance
+%TODO Gera: FAST,SLOW -> 0.8, 0.2
 
 \documentclass[11pt]{article}
 
@@ -80,9 +82,8 @@ We claim that for control systems we can achieve better performance by using ric
 \subsection{Vision based controllers for drones}
 To test our concepts, we will examine the implementation of an autonomously flying quad-rotor in the context of an agriculture case study. Specifically, we will implement a quad-rotor that flies in corridors and greenhouses by a vision based feedback. The challenge in this case study, from our perspective, is that image processing is a heavy computational task that requires careful scheduling in order to preserve the system predictability and stability.
 
-%DONE Gera: some bla-bla about the current state of the art and how we will improve it. 
-The current state-of-the-art solution of involving heavy computational tasks, e.g vision, in the control system is simply by adding computational power to the system (use faster processor), usually lots more than needed in order to eliminate the chance of loosing predictability.
-Some more conservative control engineers prefers to isolate the heavy computation from the core control loop by allocating one of the processor's core for that task, or even run the vision processing on different computer (See how APM suggest to use computer vision abilities, Section~\ref{sec:APM_suported_vision})
+The current state-of-the-art solution for involving heavy computational tasks such as vision in the control system is simply by adding computational power to the system (use faster processors), usually much more than needed in order to eliminate the chance of loosing predictability.
+Some, more conservative, control engineers prefers to isolate the heavy computation from the core control loop by allocating one of the processor's core for that task, or even run the vision processing on a different computer (see, for example, how APM suggest to use computer vision abilities, Section~\ref{sec:APM_suported_vision}).
 
 
 In Section~\ref{sec:Research Plan} we suggest a novel framework model for such systems that we will implement in this thesis.
@@ -153,7 +154,7 @@ Our research plan consists of: (1) Designing a methodology for effective allocat
         
     \end{tikzpicture}
     
-    \caption{The controller framework we will implement, the \textit{scheduler} will allocate CPU time ($<time,cov>$) for the \textit{Computer Vision} task base on the state estimation certainty using guarded Automata.
+    \caption{The controller framework we will implement, the \textit{scheduler} will allocate CPU time ($\langle time,cov \rangle$) for the \textit{Computer Vision} task base on the state estimation certainty using guarded Automata.
     \label{fig:hybrid_loop}}
 \end{figure}
 
@@ -196,7 +197,7 @@ We believe that this is a reasonable  assumption because it is the sum of many i
 %TODO - reed a litle the article (\cite{UPenn-Pant}) and re-write the next.
 %TODO - check if Anitime reserch (\cite{Shlomo}) can fit here.
 %TODO - Make sure that we use the terms contract-base and any-time correctly
-In order to control the running time, we will use a "contract based" vision algorithms proposed by Pant~\cite{UPenn-Pant}.
+In order to control the running time, we will use a ``contract based" vision algorithms proposed by Pant~\cite{UPenn-Pant}.
 This type of algorithms run until we stop them, and when we stop them they will provide a solution with accuracy that is proportional to the amount of time it was running. That way we can control the solution accuracy by controlling the running time.
 In our implementation, in order to lower the complexity, we will pre-define few different ``operation modes" of the \textit{Computer~Vision} task, that differ by their running time and they are identified by a pair $\langle RunTime, Covariance \rangle$ where $Covariance$ is the error covariance of running time $RunTime$.
 
@@ -212,8 +213,7 @@ In our implementation, in order to lower the complexity, we will pre-define few 
 The control task itself (\textit{Control Law}) is responsible for reducing the difference between the current state ($x$) where $\tilde{x} = x+ ``estimation~error"$ (in Figure~\ref{fig:general_hybrid_loop}) and the target state ($u$ in Figure~\ref{fig:general_hybrid_loop}), by changing the drone motors speed.
 This task is usually a very low CPU consumer and been well studied~\cite{PID}, hence, in this thesis we will use a well known technique from control theory called {\textbf{PID}\footnote{PID controller - A proportional-integral-derivative controller}}. 
 In this technique the control output is based on the physical knowledge of the system dynamics, and have 3 variable parameters (P, I and D) that define the controller convergence behavior. 
-This is also the technique used in the APM software (Section~
-ef{sec:APM}) that we will use and we will not change it.
+This is also the technique used in the APM software (Section~\ref{sec:APM}) that we will use and we will not change it.
 %TODO - maybe add explanation on how this task can be envolved in the scheduling desision
 
 \subsubsection{Computation Resource Scheduler: Automata Based Scheduler}
@@ -247,13 +247,13 @@ if we find edge $e$ that (slot scheduling step) that goes beyond the maximum dur
         \node (B) [state, accepting] [right of=A] {};
         \node (C) [state, accepting] [right of=B] {};
         
-        \path[->] (A) edge [loop above] node {$true \wedge s_{slow}$} (A);
-        \path[->] (A) edge [bend left] node {$\neg est_{Bad} \wedge s_{fast}$} (B);
-        \path[->] (B) edge [bend left] node {$true \wedge s_{slow}$} (A);
+        \path[->] (A) edge [loop above] node {$s_{slow}$} (A);
+        \path[->] (A) edge [bend left] node {$\neg est_{bad} \wedge s_{fast}$} (B);
+        \path[->] (B) edge [bend left] node {$s_{slow}$} (A);
         %\path[->] (B) edge [loop above] node {$\neg cov3$} (B);
         \path[->] (B) edge [bend left] node {$est_{good} \wedge s_{fast}$} (C);
         %\path[->] (C) edge [loop above] node {$cov1$} (C);
-        \path[->] (C) edge [bend left=60] node {$true \wedge s_{slow}$} (A);
+        \path[->] (C) edge [bend left=60] node {$s_{slow}$} (A);
                 
 
     \end{tikzpicture}
@@ -287,7 +287,7 @@ and (2) $s_{fast}$ a less accurate operation mode but takes less time to execute
 In each time slot we can execute one of them and get the sensing process done, but if we use only $s_{slow}$ we may not have enough time to execute all the tasks, on the other hand if we use only $s_{fast}$ we will have Inferior estimates.
 Figure~\ref{fig:sched_sense_auto} shows an example guarded automata that guide the schedule, with the automata we can express reach specifications, in this example execute $s_{slow}$ is always allowed but if we need faster sensing we can use $s_{fast}$ but only once in a row if the estimation error is not bad, or even twice in a row if the estimation error is good.
 
-The estimation error ($est_{good}$ and $est_{bad}$) in the Figure is a function of the estimation error covariance ($cov(x-\tilde{x})$ in Figure~\ref{fig:hybrid_loop}), if $cov(x-\tilde{x})$ is small then $est_{good} = true$, if is normal then $est_{normal} = true$ end $est_{bad} = true$ if $cov(x-\tilde{x})$ is  bigger then some boundary.
+The estimation error ($est_{good}$ and $est_{bad}$) in the figure is a function of the estimation error covariance ($cov(x-\tilde{x})$ in Figure~\ref{fig:hybrid_loop}), if $cov(x-\tilde{x})$ is small then $est_{good} = true$, if is normal then $est_{normal} = true$ end $est_{bad} = true$ if $cov(x-\tilde{x})$ is  bigger then some boundary.
 This value ($cov(x-\tilde{x})$) is calculated by the state estimator task (Section~\ref{sec:estimator}).
 
 Each of this operation modes ($s_{slow}$ and $s_{fast}$) have different accuracy, noted by $cov(v)$ in Figure~\ref{fig:hybrid_loop}, and if we want to get optimal estimation the state estimator mast be configure correspondingly, i.e the sensing error covariance should be adjusted to the correct value ($s_{slow}$), an easy solution for specifyng this is by the guarded automata in Figure~\ref{fig:sched_estimator_auto}, which define two operetion modes of the state estimator, $est_1$ and $est_2$, that correspond to $cov(s_{slow})$ and $cov(s_{fast})$. So of course if we sense in mode $s_{slow}$ we must estimate with mode $est_1$, and if we sense in mode $s_{fast}$ we must estimate with mode $est_2$.
