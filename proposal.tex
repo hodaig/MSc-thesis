@@ -1,6 +1,6 @@
 %TODO Hodai: get rid of the CPU (use processor/computational time...)
 %TODO Gera: Covariance -> Variance
-%TODO Gera: FAST,SLOW -> 0.8, 0.2
+%TODO Hodai: find the correct word for "guarded automata"
 
 \documentclass[11pt]{article}
 
@@ -221,7 +221,7 @@ This is also the technique used in the APM software (Section~\ref{sec:APM}) that
 %TODO ~\cite{RTComposer}
 %TODO ~\cite{Merav}
 
-Real-time systems are mostly composed of multiple real-time tasks, tasks with time constraint, for example task that must response within specified time constraints. 
+Real-time systems are mostly composed of multiple real-time tasks, tasks with time constraint, for example task that must response within specified time constraints.
 The purpose of schedulers in such systems is to allocate the limited computational resources (CPU time) within all the task in the system. To do so, we need a well defined communication interface between the real-time tasks and the scheduler.
 
 The most common way of describing the requirements of a real-time component is to specify a period, sometimes along with a deadline, which gives the frequency at which the component must execute. The designer of the component makes sure that the performance objectives are met as long as the component is executed consistent with its period. The scheduler guarantees that all components get enough resources.
@@ -230,36 +230,50 @@ Specifying resource requirements using periods has advantages due to simplicity 
 %For example, a specification such as “execute the component every 5ms” does not say whether the scheduler should or should not execute it more frequently if enough computing resources are available, and if a component has multiple methods, say, for different control tasks, each needing a different period, the requirement cannot be naturally captured by a single period.
 
 In this thesis one of the main subjects, as we said above (Section~\ref{sec:Research Plan}), is to develop a methodology for allocation resources. We will focus on how should engineers describe the requirements of a real-time component.
-We will develop automata based methodologies and schedulers based on the work of Alur~\cite{RTComposer} and Bukra~\cite{Merav}, and will demonstrate with measurable data how they improve the performance of real flying drones (see Section~\ref{sec:enviroment}).
-We will use finite automata over infinite words as specification framework for resource requirements, automata can be more expressive, for describe more specific requirements, and they are composable, it is easy to compose all the tasks requirements into one automata. 
+To simplify, We will assume that the resource is allocated in discrete slots of some fixed duration in the style of time-triggered architecture~\cite{RTComposer}. %TODO - Hodai: fix this centence
+We will develop automata based (hybrid automata) methodologies and schedulers based on the work of Alur~\cite{RTComposer} and Bukra~\cite{Merav}, and will demonstrate with measurable data how they improve the performance of real flying drones (see Section~\ref{sec:enviroment}).
+%We will use finite automata over infinite words as specification framework for resource requirements, automata can be more expressive, for describe more specific requirements, and they are composable, it is easy to compose all the tasks requirements into one automata. 
 
-Each infinite path on the composed automata is a scheduling that satisfy all the tasks requirements. To simplify, We will assume that the resource is allocated in discrete slots of some fixed duration in the style of time-triggered architecture~\cite{RTComposer}. %TODO - Hodai: fix this centence
+We will use hybrid automata as specification framework for resource requirements.
+hybrid automata is a variation of finite automata for infinite words~\cite{hybrid-systems}.
+Automata can be more expressive for describe more specific requirements, and they are composable, it is easy to compose all the tasks requirements into one general automata.
+The hybrid automata define continuous (fixed period) operation modes, represented by the automata state, and the condition of mode changing (mode transition) denote by the automata edges.
+The operation mode directly define a set of tasks that will be executed in the time slot (for example $s_{0.7}$ in Figure~\ref{fig:sched_sense_auto}).
+We can stay at a single mode for few time iterations, in this case the same tasks will be schedule in each iteration. 
+We can also take \textbf{discrete mode transition} in order to change operation mode after few iterations and schedule different set of tasks, for example, in Figure~\ref{fig:sched_sense_auto} the edge $(m_1,m_2)$ says that if the previous iteration mode was $m_1$ and $estCov < 0.7$ we can change the mode and schedule the set $\{s_{0.2}\}$ in the next iteration.
+
+Each infinite path on the composed hybrid automata (not necessary infinite mode transitions) is a scheduling that satisfy all the tasks requirements. 
 In this architecture the scheduler only need to ``walk through'' the composed automata, this is of course fast and easy computational task. 
-In order to assure that we not exceed the time slot duration, each task will have pre-defined maximum duration time like ``deadline'' in the traditional architecture.Now we can verify all the possible scheduling steps of a single time slot (all the transitions of the composed automata), we can summarize the total slot ``deadline'' as follows:\\
-$\forall edge~e ~~(\sum_{t \in Guard(e)} deadline(t) ) \leq slot~duration$ \\
-if we find edge $e$ that (slot scheduling step) that goes beyond the maximum duration we will remove it from the automata so we never exceed the time slot duration.
+In order to assure that we not exceed the time slot duration, each task will have pre-defined maximum duration time like ``deadline'' in the traditional architecture. Now we can verify that every possible scheduling step can execute within a single time slot, in other words, every mode of the composed automata can be done in single time slot, by simply summarize the ``deadline'' of all the tasks in the mode tasks set.
+%we can summarize the total slot ``deadline'' as follows:\\
+%$\forall mode~e ~~(\sum_{t \in Guard(e)} deadline(t) ) \leq slot~duration$ \\
+If we find mode that goes beyond the maximum duration we will remove it from the automata so we never exceed the time slot duration.
 
 
 \begin{figure}[]
     \centering
     
-    \begin{tikzpicture}[node distance=4cm,auto]
-        \node (A) [state, accepting, initial] {};
-        \node (B) [state, accepting] [right of=A] {};
-        \node (C) [state, accepting] [right of=B] {};
+    \begin{tikzpicture}[node distance=4cm, text centered, auto]
+        \node (A) [state, accepting, text width=1cm, initial] {$m_1$ $\{s_{0.7}\}$};
+        \node (B) [state, accepting, text width=1cm] [right of=A] {$m_2$ $\{s_{0.2}\}$};
+        \node (C) [state, accepting, text width=1cm] [right of=B] {$m_3$ $\{s_{0.2}\}$};
         
-        \path[->] (A) edge [loop above] node {$s_{slow}$} (A);
-        \path[->] (A) edge [bend left] node {$\neg est_{bad} \wedge s_{fast}$} (B);
-        \path[->] (B) edge [bend left] node {$s_{slow}$} (A);
+        \path[->] (A) edge [loop above] node {$true$} (A);
+        %\path[->] (A) edge [bend left] node {$\neg est_{bad} \wedge s_{0.2}$} (B);
+        \path[->] (A) edge [bend left] node {$estCov < 0.7$} (B);
+        \path[->] (B) edge [bend left] node {$true$} (A);
         %\path[->] (B) edge [loop above] node {$\neg cov3$} (B);
-        \path[->] (B) edge [bend left] node {$est_{good} \wedge s_{fast}$} (C);
+        %\path[->] (B) edge [bend left] node {$est_{good} \wedge s_{0.2}$} (C);
+        \path[->] (B) edge [bend left] node {$ estCov < 0.3$} (C);
         %\path[->] (C) edge [loop above] node {$cov1$} (C);
-        \path[->] (C) edge [bend left=60] node {$s_{slow}$} (A);
+        \path[->] (C) edge [bend left=60] node {$true$} (A);
                 
 
     \end{tikzpicture}
     
-    \caption{Example of guarded automata for our vision based sensor task, in this example the task has two operation modes, $\mathbf{s_{slow}}$ which perform slow but more accurate vision computation and $\mathbf{s_{fast}}$ which is less accurate but faster, every time slot exactly one of the mode will be executed.
+    \caption{Example of guarded automata for our vision based sensor task, in this example the task has two operation modes, $\mathbf{s_{0.7}}$ which need 70\% of the time slot but is more accurate vision computation and $\mathbf{s_{0.2}}$ which is less accurate but faster (need only 20\% of the slot).
+    The value of $estCov$ is $cov(x-\tilde{x})$ of the previous iteration.
+    Every time slot exactly one of the modes will be executed.
     \label{fig:sched_sense_auto}}
 \end{figure}
 
@@ -267,39 +281,38 @@ if we find edge $e$ that (slot scheduling step) that goes beyond the maximum dur
     \centering
     
     \begin{tikzpicture}[node distance=4cm,auto]
-        \node (A) [state, accepting, initial] {};
-        %\node (B) [state, accepting] [right of=A] {};
+        \node (A) [state, accepting, initial] {$\{est_1\}$};
+        \node (B) [state, accepting] [right of=A] {$\{est_2\}$};
         
-        \path[->] (A) edge [loop above] node {$s_{slow} \wedge est_1$} (A);
-        %\path[->] (A) edge [bend left] node {$s_{fast} \wedge est_2$} (B);
-        %\path[->] (B) edge [loop above] node {$s_{fast} \wedge est_2$} (B);
-        \path[->] (A) edge [loop right] node {$s_{fast} \wedge est_2$} (A);
-        %\path[->] (B) edge [bend left] node {$s_{slow} \wedge est_1$} (A);
+        \path[->] (A) edge [loop above] node {$s_{0.7}$} (A);
+        \path[->] (B) edge [bend left] node {$s_{0.7}$} (A);
+        %\path[->] (A) edge [bend left] node {$s_{0.2} \wedge est_2$} (B);
+        %\path[->] (B) edge [loop above] node {$s_{0.2} \wedge est_2$} (B);
+        \path[->] (A) edge [bend left] node {$s_{0.2}$} (B);
+        \path[->] (B) edge [loop above] node {$s_{0.2}$} (B);
+        %\path[->] (B) edge [bend left] node {$s_{0.7} \wedge est_1$} (A);
 
     \end{tikzpicture}
     
-    \caption{Example of guarded automata for our state estimator, in this example the estimator has two operation modes, $\mathbf{est_1}$ correspond to $\mathbf{s_{slow}}$~(Figure \ref{fig:sched_sense_auto}) and $\mathbf{est_2}$ correspond to $\mathbf{s_{fast}}$~(Figure \ref{fig:sched_sense_auto}).
+    \caption{Example of guarded automata for our state estimator, in this example the estimator has two operation modes, $\mathbf{est_1}$ correspond to $\mathbf{s_{0.7}}$ and $\mathbf{est_2}$ correspond to $\mathbf{s_{0.2}}$~(see Figure \ref{fig:sched_sense_auto}).
     \label{fig:sched_estimator_auto}}
 \end{figure}
 
 Let's take for example of that automata based interface for the system in Figure~\ref{fig:hybrid_loop}.
-Assume we have two operation modes of the vision based sensor, (1) $s_{slow}$ a very accurate operation mode that takes significant amount of time to execute, 
-and (2) $s_{fast}$ a less accurate operation mode but takes less time to execute.
-In each time slot we can execute one of them and get the sensing process done, but if we use only $s_{slow}$ we may not have enough time to execute all the tasks, on the other hand if we use only $s_{fast}$ we will have Inferior estimates.
-Figure~\ref{fig:sched_sense_auto} shows an example guarded automata that guide the schedule, with the automata we can express reach specifications, in this example execute $s_{slow}$ is always allowed but if we need faster sensing we can use $s_{fast}$ but only once in a row if the estimation error is not bad, or even twice in a row if the estimation error is good.
+Assume we have two operation modes of the vision based sensor, (1) $s_{0.7}$ a very accurate operation mode that takes 70\% of the time slot to execute, that is of course a significant amount of time, and (2) $s_{0.2}$ a less accurate operation mode but takes only 20\% of the slot.
+In each time slot we can execute one of them and get the sensing process done, but if we use only $s_{0.7}$ every time slot we may not have enough time to execute all the tasks, on the other hand if we use only $s_{0.2}$ we will have Inferior estimates.
+Figure~\ref{fig:sched_sense_auto} shows an example guarded automata that guide the schedule, with the automata we can express reach specifications. 
+In this example, execute $s_{0.7}$ is always allowed but if we need faster sensing we can use $s_{0.2}$ but only once in a row if the estimation error is not extremely bad~(if~$cov(x-\tilde{x}) < 0.7$), or even twice in a row if the estimation error is good~(if~$cov(x-\tilde{x}) < 0.3$).
 
-The estimation error ($est_{good}$ and $est_{bad}$) in the figure is a function of the estimation error covariance ($cov(x-\tilde{x})$ in Figure~\ref{fig:hybrid_loop}), if $cov(x-\tilde{x})$ is small then $est_{good} = true$, if is normal then $est_{normal} = true$ end $est_{bad} = true$ if $cov(x-\tilde{x})$ is  bigger then some boundary.
-This value ($cov(x-\tilde{x})$) is calculated by the state estimator task (Section~\ref{sec:estimator}).
+The estimated estimation error ($estCov$ in the figure) is in this case the estimation error variance ($cov(x-\tilde{x})$ in Figure~\ref{fig:hybrid_loop}). 
+%if $cov(x-\tilde{x})$ is small then $est_{good} = true$, if is normal then $est_{normal} = true$ end $est_{bad} = true$ if $cov(x-\tilde{x})$ is  bigger then some boundary.
+This value ($estCov~=~cov(x~-~\tilde{x})$) is calculated by the state estimator task (Section~\ref{sec:estimator}) and passed to the scheduler.
 
-Each of this operation modes ($s_{slow}$ and $s_{fast}$) have different accuracy, noted by $cov(v)$ in Figure~\ref{fig:hybrid_loop}, and if we want to get optimal estimation the state estimator mast be configure correspondingly, i.e the sensing error covariance should be adjusted to the correct value ($s_{slow}$), an easy solution for specifyng this is by the guarded automata in Figure~\ref{fig:sched_estimator_auto}, which define two operetion modes of the state estimator, $est_1$ and $est_2$, that correspond to $cov(s_{slow})$ and $cov(s_{fast})$. So of course if we sense in mode $s_{slow}$ we must estimate with mode $est_1$, and if we sense in mode $s_{fast}$ we must estimate with mode $est_2$.
+Each of this operation modes ($s_{0.7}$ and $s_{0.2}$) have different accuracy, noted by $cov(v)$ in Figure~\ref{fig:hybrid_loop}, and if we want to get optimal estimation the state estimator mast be configure correspondingly, i.e the sensing error variance should be adjusted to the correct value ($cov(s_{0.7})$), an easy solution for specify the different configurations is by the guarded automata shown in Figure~\ref{fig:sched_estimator_auto}, which define two operetion modes of the state estimator, $est_1$ and $est_2$, that correspond to $cov(s_{0.7})$ and $cov(s_{0.2})$. So of course if we sense in mode $s_{0.7}$ we must estimate with mode $est_1$ that has the correct configurations for $s_{0.7}$, and if we sense in mode $s_{0.2}$ we must estimate with mode $est_2$.
 
-
+%TODO Hodai: need to add example figure of composed automata??
 %TODO basic periodic
 
-
-%This research continues/completes the work of Merav Bukra ~\cite{Merav} on scheduling computations in embedded control systems.
-%In her thesis Merav presented an approach and a proof-of-concept tool for scheduling computation resources in control software. The tool was good enough for demonstrating the concept with simulations, but it did not integrate with any real-life system. In this research we will develop a resource scheduler for real-life control model (see~\ref{sec:contmode}),and upgrade the control software (APM) of a well-known quad-copter by replacing it's RT-scheduler with our new scheduler.
-%We expect an improvement in CPU utilization that will allow improvements of stability of the drone.
 
 \subsection{Experimental environment}
 \label{sec:enviroment}
