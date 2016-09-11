@@ -205,16 +205,31 @@ In our implementation, in order to lower the complexity, we will pre-define few 
 \label{sec:estimator}
 % kalman filter & ...
 % seperation rule of kalman
-%TODO - complete
+
+In cases where we have uncertain observations (inaccurate sensors), e.g. the computer vision measurement, we prefer to make some \textbf{educated estimation} of the current state based on the uncertain observations rather than just consider the last observation as the current state.
+This \textbf{educated estimation} about the current state is the main goal of the \textit{State~Estimator} block.
+This block receives the raw data from the sensors and produce an estimation of the current state.
+
+In this thesis we will use well known optimal estimator called Kalman filter, or more accurate extended Kalman filter (EKF) witch is the nonlinear version of Kalman filter.
+The algorithm works in a two-step process. In the prediction step, the Kalman filter produces estimates of the current state variables, along with their uncertainties. Once the outcome of the next measurement is observed, these estimates are updated using a weighted average, with more weight being given to estimates with higher certainty.
+%The algorithm is recursive. It can run in real time, using only the present input measurements and the previously calculated state and its uncertainty matrix; no additional past information is required. 
+(Wikipedia~\cite{kalman filter}) %TODO - add the reference
+
+In order to produce optimal estimation with Kalman filter one of the parameter that we need to take in our calculation is the variance of the sensor error.
+But in our new framework the sensor (vision based sensor) have variable error variance for each time slot, that mean we need to have also variable state estimators correspondingly.
+In order to adjust the sensor error variance, each time step the scheduler will inform the state estimator about the new error variance, and the state estimator will use correspond parameters to make the next estimation.
+
+APM, the control software that we will use, is already using kalman filter as the state estimator, so we only need to adjust the existing module to the variable sensor error variance (see Section~\ref{sec:APM-estimator}), %TODO - ref
+and to send the estimation error variance to the scheduler (see Section~\ref{sec:scheduler}).
 
 \subsubsection{Control Tasks}
 \label{sec:control}
 %TODO: gera - LQR instead (or in addition?) of PID
-The control task itself (\textit{Control Law}) is responsible for reducing the difference between the current state ($x$) where $\tilde{x} = x+ ``estimation~error"$ (in Figure~\ref{fig:general_hybrid_loop}) and the target state ($u$ in Figure~\ref{fig:general_hybrid_loop}), by changing the drone motors speed.
-This task is usually a very low CPU consumer and been well studied~\cite{PID}, hence, in this thesis we will use a well known technique from control theory called {\textbf{PID}\footnote{PID controller - A proportional-integral-derivative controller}}. 
-In this technique the control output is based on the physical knowledge of the system dynamics, and have 3 variable parameters (P, I and D) that define the controller convergence behavior. 
-This is also the technique used in the APM software (Section~\ref{sec:APM}) that we will use and we will not change it.
-%TODO - maybe add explanation on how this task can be envolved in the scheduling desision
+The control task itself (\textit{Control Law} in Figure~\ref{fig:general_hybrid_loop}) is responsible for reducing the difference between the current state ($x$) where $\tilde{x} = x+ ``estimation~error"$ (in Figure~\ref{fig:general_hybrid_loop}) and the target state ($u$ in Figure~\ref{fig:general_hybrid_loop}), by changing the drone motors speed.
+
+Optimal estimation or optimal control low is not guarantee the overall  optimal feedback controller, but as Kalman prove, 
+
+%This task is usually a very low CPU consumer and been well studied~\cite{PID}, hence, in this thesis we will use a well known technique from control theory called {\textbf{PID}\footnote{PID controller - A proportional-integral-derivative controller}}. In this technique the control output is based on the physical knowledge of the system dynamics, and have 3 variable parameters (P, I and D) that define the controller convergence behavior. This is also the technique used in the APM software (Section~\ref{sec:APM}) that we will use and we will not change it.
 
 \subsubsection{Computation Resource Scheduler: Automata Based Scheduler}
 \label{sec:scheduler}
