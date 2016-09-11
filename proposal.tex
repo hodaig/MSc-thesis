@@ -45,7 +45,10 @@ This brings two research challenges that we intend to attack in the proposed the
 While it is possible to build control systems using standard operating systems, either real-time or desktop with static or with dynamic scheduling schemes, there is an agreed opinion in the control community that these do not serve well for the purpose outlined above \cite{??}. Specifically, desktop type operating systems (Windows, Linux, etc.) schedule for computational efficiency, but do not allow for control performance guarantees of the individual loops. On the other hand, real-time operating systems sacrifice some efficiency for timing predictability, but they do relate timing information with control performance. When using such operating systems for control engineers usually apply controllers that work in a fixed periodic manner so that control behavior becomes deterministic and control performance can be guaranteed. This is not efficient because resources can be better utilized if controllers act at higher frequencies when only when needed. 
 In this work we will develop methods to combine the efficiency of desktop operating systems with the predictability of real-time operating systems in a way that is more suitable for control systems then periods and deadlines
 
-The control loops that we are analyzing are here of the form shown in Figure~\ref{fig:control loop}. A physical plant (controlled system) is connected via sensors and actuators... %TODO - Gera: explain the figure
+The control loops that we are analyzing are of the architecture form shown in Figure~\ref{fig:control loop}. 
+We assume a close feedback control loop where the physical plant, \textit{System}, is monitored via array of sensors (\textit{Sensing}) which produce raw data that represent some state variables. 
+We assume uncertainty observations from the sensors so after sensing the \textit{State Estimator} aggregate the raw data from all the sensors and make educated estimation of the current state in order to improve the state estimation.
+Then the \textit{Control Law} will use actuators (change the outputs)  in order to close the gap from the current estimated state and the reference state (\textit{Input}).
 
 The current state of the art is that control engineers design control tasks as periodic computations then they specify the required periodic frequency for the task and software engineers design a scheduler that ensures that the periodic frequency requirements are met usually using pre-computed knowledge of the expected (maximum) duration of the tasks.
 We claim that for control systems we can achieve better performance by using richer and more flexible set of requirements for the tasks. Specifically, we will develop tools with which the control engineers can specify in a natural way features of their control loop that the scheduler will use to allow for dynamic schedules that guarantee required control performance. 
@@ -55,7 +58,7 @@ We claim that for control systems we can achieve better performance by using ric
     
     \begin{tikzpicture}[node distance=2cm]
         \node (in) [eNode] {Input};
-        \node (control) [recNodeB, right of=in, xshift=0.5cm] {control law};
+        \node (control) [recNodeB, right of=in, xshift=0.5cm] {control Law};
         \node (sys) [recNodeB, right of=control, xshift=6cm] {System};
         \node (sensor) [recNodeB, below of=sys, xshift=-2cm] {Sensing};
         \node (estimator) [recNodeB, below of=control, xshift=2cm] {State Estimation};
@@ -83,8 +86,7 @@ We claim that for control systems we can achieve better performance by using ric
 To test our concepts, we will examine the implementation of an autonomously flying quad-rotor in the context of an agriculture case study. Specifically, we will implement a quad-rotor that flies in corridors and greenhouses by a vision based feedback. The challenge in this case study, from our perspective, is that image processing is a heavy computational task that requires careful scheduling in order to preserve the system predictability and stability.
 
 The current state-of-the-art solution for involving heavy computational tasks such as vision in the control system is simply by adding computational power to the system (use faster processors), usually much more than needed in order to eliminate the chance of loosing predictability.
-Some, more conservative, control engineers prefers to isolate the heavy computation from the core control loop by allocating one of the processor's core for that task, or even run the vision processing on a different computer (see, for example, how APM suggest to use computer vision abilities, Section~\ref{sec:APM_suported_vision}).
-
+Some, more conservative, control engineers prefers to isolate the heavy computation from the core control loop by allocating one of the processor's core for that task, or even run the vision processing on a different computer (see, for example, how APM suggest to use computer vision abilities~\cite{APM}).
 
 In Section~\ref{sec:Research Plan} we suggest a novel framework model for such systems that we will implement in this thesis.
 
@@ -130,7 +132,6 @@ Our research plan consists of: (1) Designing a methodology for effective allocat
 
 \begin{figure}[h]
     \centering
-    %TODO - maybe add \%CPU arrow from scheduler to control law 
     \begin{tikzpicture}[node distance=2cm]
         \node (in) [eNode] {Input};
         \node (control) [recNodeB, right of=in, xshift=1cm, text width=3cm] 
@@ -213,23 +214,20 @@ This block receives the raw data from the sensors and produce an estimation of t
 In this thesis we will use well known optimal estimator called Kalman filter, or, more accurately, extended Kalman filter (EKF) which is the nonlinear version of Kalman filter.
 The algorithm works in a two-step process. In the prediction step, the Kalman filter produces estimates of the current state variables, along with their uncertainties. Once the outcome of the next measurement is observed, these estimates are updated using a weighted average, with more weight being given to estimates with higher certainty.
 %The algorithm is recursive. It can run in real time, using only the present input measurements and the previously calculated state and its uncertainty matrix; no additional past information is required. 
-\cite{kalman filter} %TODO - add the reference
+\cite{Kalman-filter}
 
 In order to produce optimal estimation with Kalman filter, one of the parameter that we need to consider in our calculation is the variance of the sensor error.
 But in our new framework the sensor (vision based sensor) have variable error variance for each time slot, this means that we need to have also variable state estimators correspondingly.
 In order to adjust the sensor error variance, each time step the scheduler will inform the state estimator about the new error variance, and the state estimator will use corresponding parameters to make the next estimation.
 
-APM, the control software that we will use, is already using kalman filter as the state estimator, so we only need to adjust the existing module to the variable sensor error variance (see Section~\ref{sec:APM-estimator}), %TODO - ref
-and to send the estimation error variance to the scheduler (see Section~\ref{sec:scheduler}).
+APM, the control software that we will use, is already using kalman filter as the state estimator, so we only need to adjust the existing module to the variable sensor error variance, and to send the estimation error variance to the scheduler (see Section~\ref{sec:scheduler}).
 
 \subsubsection{Control Tasks}
 \label{sec:control}
-%TODO: gera - LQR instead (or in addition?) of PID
 The control task itself (\textit{Control Law} in Figure~\ref{fig:general_hybrid_loop}) is responsible for reducing the difference between the current state ($x$) where $\tilde{x} = x+ ``estimation~error"$ (in Figure~\ref{fig:general_hybrid_loop}) and the target state ($u$ in Figure~\ref{fig:general_hybrid_loop}), by changing the drone motors speed.
 
-Optimal estimation or optimal control low is not guarantee the overall  optimal feedback controller, but as Kalman prove, 
-
-This task is usually a very low CPU consumer and been well studied~\cite{PID}, hence, in this thesis we will not be concentrated on the control task, we will use the same controller that APM are using (see Section~\ref{sec:APM}).
+%Optimal estimation or optimal control low is not guarantee the overall  optimal feedback controller, but as Kalman prove, 
+The control task is usually a very low CPU consumer and been well studied~\cite{???}, hence, in this thesis we will not be concentrated on the control task, we will use the same controller that APM are using.
 APM use a common used and well known technique from control theory called {\textbf{PID}\footnote{PID controller - A proportional-integral-derivative controller}}.
 In this technique the control output is based on the physical knowledge of the system dynamics, and have 3 variable parameters (P, I and D) that define the controller convergence behavior.
 
@@ -241,8 +239,6 @@ We will check if adjustable LQR has significant advantages over PID in cases wer
 
 \subsubsection{Computation Resource Scheduler: Automata Based Scheduler}
 \label{sec:scheduler}
-%TODO ~\cite{RTComposer}
-%TODO ~\cite{Merav}
 
 Real-time systems are mostly composed of multiple real-time tasks, tasks with time constraint, for example task that must response within specified time constraints.
 The purpose of schedulers in such systems is to allocate the limited computational resources (CPU time) within all the task in the system. To do so, we need a well defined communication interface between the real-time tasks and the scheduler.
@@ -253,12 +249,12 @@ Specifying resource requirements using periods has advantages due to simplicity 
 %For example, a specification such as “execute the component every 5ms” does not say whether the scheduler should or should not execute it more frequently if enough computing resources are available, and if a component has multiple methods, say, for different control tasks, each needing a different period, the requirement cannot be naturally captured by a single period.
 
 In this thesis one of the main subjects, as we said above (Section~\ref{sec:Research Plan}), is to develop a methodology for allocation resources. We will focus on how should engineers describe the requirements of a real-time component.
-To simplify, We will assume that the resource is allocated in discrete slots of some fixed duration in the style of time-triggered architecture~\cite{RTComposer}. %TODO - Hodai: fix this centence
-We will develop automata based (hybrid automata) methodologies and schedulers based on the work of Alur~\cite{RTComposer} and Bukra~\cite{Merav}, and will demonstrate with measurable data how they improve the performance of real flying drones (see Section~\ref{sec:enviroment}).
+To simplify, We will assume that the resource is allocated in discrete slots of some fixed duration in the style of time-triggered architecture~\cite{RTComposer}.
+We will develop automata based (hybrid automata) methodologies and schedulers based on the work of Alur~\cite{RTComposer} and Bukra~\cite{Merav}, and will demonstrate with measurable data how they improve the performance of real flying drones (see Section~\ref{sec:results}).
 %We will use finite automata over infinite words as specification framework for resource requirements, automata can be more expressive, for describe more specific requirements, and they are composable, it is easy to compose all the tasks requirements into one automata. 
 
 We will use hybrid automata as specification framework for resource requirements.
-hybrid automata is a variation of finite automata for infinite words~\cite{hybrid-systems}.
+hybrid automata is a variation of finite automata for infinite words~\cite{hibrid-systems}.
 Automata can be more expressive for describe more specific requirements, and they are composable, it is easy to compose all the tasks requirements into one general automata.
 The hybrid automata define continuous (fixed period) operation modes, represented by the automata state, and the condition of mode changing (mode transition) denote by the automata edges.
 The operation mode directly define a set of tasks that will be executed in the time slot (for example $s_{0.7}$ in Figure~\ref{fig:sched_sense_auto}).
@@ -332,10 +328,6 @@ The estimated estimation error ($estCov$ in the figure) is in this case the esti
 This value ($estCov~=~cov(x~-~\tilde{x})$) is calculated by the state estimator task (Section~\ref{sec:estimator}) and passed to the scheduler.
 
 Each of this operation modes ($s_{0.7}$ and $s_{0.2}$) have different accuracy, noted by $cov(v)$ in Figure~\ref{fig:hybrid_loop}, and if we want to get optimal estimation the state estimator mast be configure correspondingly, i.e the sensing error variance should be adjusted to the correct value ($cov(s_{0.7})$), an easy solution for specify the different configurations is by the guarded automata shown in Figure~\ref{fig:sched_estimator_auto}, which define two operetion modes of the state estimator, $est_1$ and $est_2$, that correspond to $cov(s_{0.7})$ and $cov(s_{0.2})$. So of course if we sense in mode $s_{0.7}$ we must estimate with mode $est_1$ that has the correct configurations for $s_{0.7}$, and if we sense in mode $s_{0.2}$ we must estimate with mode $est_2$.
-
-%TODO Hodai: need to add example figure of composed automata??
-%TODO basic periodic
-
 
 \section{Preliminary Work and Results}
 \label{sec:results}
