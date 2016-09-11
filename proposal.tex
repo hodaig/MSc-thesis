@@ -178,7 +178,7 @@ For example if the vision is clear the \textit{Computer~Vision} will produce goo
 The above collaboration requires to re-adjust some parts of the controlling system, e.g. the \textit{State~Estimator} needs to work with variable error covariance of \textit{Computer~Vision} measurement and the \textit{Computer~Vision} needs to be able run within variable time limits, and also the tasks pre-defined requirements need to be re-adjust in order to define the relation between tasks, like \textit{Computer~Vision} and \textit{State~Estimator}.
 Below we will dive in each part of the above system (Figure~\ref{fig:hybrid_loop}) and explain how it will be adjusted (changed) and how we will achieve that adjustment in our demonstration.
 
-Finally, we need to re-consider the system Analyzing technique because variable sensing characteristics (\textit{Computer~Vision} time limits) will lead to variable estimation characteristics... %TODO - complete and fix this paragraph or remove it
+%Finally, we need to re-consider the system Analyzing technique because variable sensing characteristics (\textit{Computer~Vision} time limits) will lead to variable estimation characteristics... %TODO - complete and fix this paragraph or remove it
 
 \subsubsection{Sensors (\textit{Computer~Vision~Based~Sensor})}
 \label{sec:sensors}
@@ -197,7 +197,7 @@ We believe that this is a reasonable  assumption because it is the sum of many i
 %TODO - reed a litle the article (\cite{UPenn-Pant}) and re-write the next.
 %TODO - check if Anitime reserch (\cite{Shlomo}) can fit here.
 %TODO - Make sure that we use the terms contract-base and any-time correctly
-In order to control the running time, we will use a ``contract based" vision algorithms proposed by Pant~\cite{UPenn-Pant}.
+In order to control the running time, we will use anytime based algorithms~\cite{Shlomo} and will mainly concentrate on ``contract based" vision algorithms proposed by Pant~\cite{UPenn-Pant}.
 This type of algorithms run until we stop them, and when we stop them they will provide a solution with accuracy that is proportional to the amount of time it was running. That way we can control the solution accuracy by controlling the running time.
 In our implementation, in order to lower the complexity, we will pre-define few different ``operation modes" of the \textit{Computer~Vision} task, that differ by their running time and they are identified by a pair $\langle RunTime, Covariance \rangle$ where $Covariance$ is the error covariance of running time $RunTime$.
 
@@ -213,7 +213,7 @@ This block receives the raw data from the sensors and produce an estimation of t
 In this thesis we will use well known optimal estimator called Kalman filter, or, more accurately, extended Kalman filter (EKF) which is the nonlinear version of Kalman filter.
 The algorithm works in a two-step process. In the prediction step, the Kalman filter produces estimates of the current state variables, along with their uncertainties. Once the outcome of the next measurement is observed, these estimates are updated using a weighted average, with more weight being given to estimates with higher certainty.
 %The algorithm is recursive. It can run in real time, using only the present input measurements and the previously calculated state and its uncertainty matrix; no additional past information is required. 
-(Wikipedia~\cite{kalman filter}) %TODO - add the reference
+\cite{kalman filter} %TODO - add the reference
 
 In order to produce optimal estimation with Kalman filter, one of the parameter that we need to consider in our calculation is the variance of the sensor error.
 But in our new framework the sensor (vision based sensor) have variable error variance for each time slot, this means that we need to have also variable state estimators correspondingly.
@@ -229,9 +229,15 @@ The control task itself (\textit{Control Law} in Figure~\ref{fig:general_hybrid_
 
 Optimal estimation or optimal control low is not guarantee the overall  optimal feedback controller, but as Kalman prove, 
 
-%This task is usually a very low CPU consumer and been well studied~\cite{PID}, hence, in this thesis we will use a well known technique from control theory called {\textbf{PID}\footnote{PID controller - A proportional-integral-derivative controller}}. In this technique the control output is based on the physical knowledge of the system dynamics, and have 3 variable parameters (P, I and D) that define the controller convergence behavior. This is also the technique used in the APM software (Section~\ref{sec:APM}) that we will use and we will not change it.
+This task is usually a very low CPU consumer and been well studied~\cite{PID}, hence, in this thesis we will not be concentrated on the control task, we will use the same controller that APM are using (see Section~\ref{sec:APM}).
+APM use a common used and well known technique from control theory called {\textbf{PID}\footnote{PID controller - A proportional-integral-derivative controller}}.
+In this technique the control output is based on the physical knowledge of the system dynamics, and have 3 variable parameters (P, I and D) that define the controller convergence behavior.
 
-%TODO: Say that APM uses EKF+PID as common in practice.We will try this and also see if EKF + adjsatdable LQR has significant advantages.
+We will also try to use ``adjustable'' {\textbf{LQR}\footnote{LQR - Linear-quadratic regulator}}.
+LQR is an optimal controller that take into account the level of certainty of the state estimation. 
+Is Usually hard task to know the certainty of estimation, but in our case we need to calculate it anyway, and we mark it as $cov(x-\tilde{x})$.
+We will make LQR ``adjustable'' in the sense that each iteration the controller will consider the new (variable) $cov(x-\tilde{x})$.
+We will check if adjustable LQR has significant advantages over PID in cases were we have variable certainty of estimation.
 
 \subsubsection{Computation Resource Scheduler: Automata Based Scheduler}
 \label{sec:scheduler}
@@ -331,19 +337,13 @@ Each of this operation modes ($s_{0.7}$ and $s_{0.2}$) have different accuracy, 
 %TODO basic periodic
 
 
-\subsection{Experimental environment}
-\label{sec:enviroment}
-\subsubsection{Drones}
-\label{sec:drones}
-\subsubsection{Ardu-Pilot-Mega as base controller software}
-\label{sec:APM}
-
-\section{Preliminary Results}
+\section{Preliminary Work and Results}
 \label{sec:results}
-Blablabla said Nobody ~\cite{Merav}.
-Blablabla said Nobody ~\cite{APM}.
-Blablabla said Nobody ~\cite{RTComposer}.
+In this preliminary phase we search for the appropriate environment, after research we decide to use Raspberry~Pi with navio~\cite{navio} based quad-rotor, with the common used and open source controller software APM~\cite{APM}.
+We manage to build and fly the complete quad-rotor, we dive into the APM code, we understand the code structure, and we are familiar with the relevant parts that we want to change.
 
+As part of the preliminary work we develop the \textbf{SimuCopter}~\cite{SimuCopter} framework that allow to program our quad-rotor (or any other APM based drones) from Matlab Simulink software.
+We will add to that framework interface and tools for using our new scheduler capabilities embedded in the simulink diagrams, and give the control engineers a complete tool for developing control software.
 
 
 %\begin{samepage}
