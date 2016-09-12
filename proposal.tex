@@ -225,7 +225,7 @@ APM, the control software that we will use, is already using kalman filter as th
 The control task itself (\textit{Control Law} in Figure~\ref{fig:general_hybrid_loop}) is responsible for reducing the difference between the current state ($x$) where $\tilde{x} = x+ ``estimation~error"$ (in Figure~\ref{fig:general_hybrid_loop}) and the target state ($u$ in Figure~\ref{fig:general_hybrid_loop}), by changing the drone motors speed.
 
 %Optimal estimation or optimal control low is not guarantee the overall  optimal feedback controller, but as Kalman prove, 
-The control task is usually a very low CPU consumer and been well studied~\cite{???}, hence, in this thesis we will not be concentrated on the control task, we will use the same controller that APM are using.
+The control task is usually a very low CPU consumer and been well studied~\cite{Bennett}~\cite{Cervin}, hence, in this thesis we will not be concentrated on the control task, we will use the same controller that APM are using.
 APM use a common used and well known technique from control theory called {\textbf{PID}\footnote{PID controller - A proportional-integral-derivative controller}}.
 In this technique the control output is based on the physical knowledge of the system dynamics, and have 3 variable parameters (P, I and D) that define the controller convergence behavior.
 
