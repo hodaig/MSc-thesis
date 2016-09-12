@@ -35,14 +35,14 @@
 
 \section{Background and Problem Statement}
 \label{sec:Background}
-Today's computer power allows for consolidation of controllers where a single computer can regulate many control loops, each with its varying needs of computation resources.
+Today's computer power allows for consolidation of controllers allowing systems where a single computer regulates many control loops, each with its varying needs of computation resources.
 This brings two research challenges that we intend to attack in the proposed thesis:
 \begin{itemize}
 	\item How to schedule control tasks in order to achieve good performance in terms of control measures (overshoot, convergence speed, etc.)?
 	\item What is a good interface for co-design of scheduling and control?
 \end{itemize}
 
-While it is possible to build control systems using standard operating systems, either real-time or desktop with static or with dynamic scheduling schemes, there is an agreed opinion in the control community that these do not serve well for the purpose outlined above \cite{??}. Specifically, desktop type operating systems (Windows, Linux, etc.) schedule for computational efficiency, but do not allow for control performance guarantees of the individual loops. On the other hand, real-time operating systems sacrifice some efficiency for timing predictability, but they do relate timing information with control performance. When using such operating systems for control engineers usually apply controllers that work in a fixed periodic manner so that control behavior becomes deterministic and control performance can be guaranteed. This is not efficient because resources can be better utilized if controllers act at higher frequencies when only when needed. 
+While it is possible to build control systems using standard operating systems, either real-time or desktop, with static or with dynamic scheduling schemes, there is an agreed opinion in the control community that these do not serve well for the purpose outlined above \cite{??}. Specifically, desktop type operating systems (Windows, Linux, etc.) schedule for computational efficiency but do not allow for worst-case performance guarantees of the individual tasks that regulate the loops. On the other hand, real-time operating systems sacrifice some efficiency for timing predictability but the type of timing guarantees that such systems provide are not enough to be used for guaranteeing control performance. When using such operating systems for control engineers usually apply controllers that work in a fixed periodic manner so that control behavior becomes deterministic and control performance can be guaranteed. This is not efficient because resources can be better utilized if controllers act at higher frequencies when only when needed. 
 In this work we will develop methods to combine the efficiency of desktop operating systems with the predictability of real-time operating systems in a way that is more suitable for control systems then periods and deadlines
 
 The control loops that we are analyzing are of the architecture form shown in Figure~\ref{fig:control loop}. 
