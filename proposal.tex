@@ -222,7 +222,7 @@ In order to adjust the sensor error variance, each time step the scheduler will 
 APM, the control software that we will use, is already using kalman filter as the state estimator, so we only need to adjust the existing module to the variable sensor error variance (see Section~\ref{sec:APM-estimator}), %TODO - ref
 and to send the estimation error variance to the scheduler (see Section~\ref{sec:scheduler}).
 
-\subsubsection{Control Tasks}
+\subsubsection{Control Tasks} 
 \label{sec:control}
 %TODO: gera - LQR instead (or in addition?) of PID
 The control task itself (\textit{Control Law} in Figure~\ref{fig:general_hybrid_loop}) is responsible for reducing the difference between the current state ($x$) where $\tilde{x} = x+ ``estimation~error"$ (in Figure~\ref{fig:general_hybrid_loop}) and the target state ($u$ in Figure~\ref{fig:general_hybrid_loop}), by changing the drone motors speed.
