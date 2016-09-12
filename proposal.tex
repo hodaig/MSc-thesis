@@ -45,10 +45,9 @@ This brings two research challenges that we intend to attack in the proposed the
 While it is possible to build control systems using standard operating systems, either real-time or desktop, with static or with dynamic scheduling schemes, there is an agreed opinion in the control community that these do not serve well for the purpose outlined above \cite{??}. Specifically, desktop type operating systems (Windows, Linux, etc.) schedule for computational efficiency but do not allow for worst-case performance guarantees of the individual tasks that regulate the loops. On the other hand, real-time operating systems sacrifice some efficiency for timing predictability but the type of timing guarantees that such systems provide are not enough to be used for guaranteeing control performance. When using such operating systems for control engineers usually apply controllers that work in a fixed periodic manner so that control behavior becomes deterministic and control performance can be guaranteed. This is not efficient because resources can be better utilized if controllers act at higher frequencies when only when needed. 
 In this work we will develop methods to combine the efficiency of desktop operating systems with the predictability of real-time operating systems in a way that is more suitable for control systems then periods and deadlines
 
-The control loops that we are analyzing are of the architecture form shown in Figure~\ref{fig:control loop}. 
-We assume a close feedback control loop where the physical plant, \textit{System}, is monitored via array of sensors (\textit{Sensing}) which produce raw data that represent some state variables. 
-We assume uncertainty observations from the sensors so after sensing the \textit{State Estimator} aggregate the raw data from all the sensors and make educated estimation of the current state in order to improve the state estimation.
-Then the \textit{Control Law} will use actuators (change the outputs)  in order to close the gap from the current estimated state and the reference state (\textit{Input}).
+The control loops that we are analyzing have the architecture shown in Figure~\ref{fig:control loop}. 
+We assume a close feedback control loop where the physical plant, \textit{System}, is monitored via an array of sensors (\textit{Sensing}) which produce raw data that represents some state variables. 
+We assume uncertainty observations from the sensors so after sensing the \textit{State Estimator} aggregates the raw data from all the sensors and makes an educated estimation of the current state in order to improve the state estimation. Then the \textit{Control Law} will use actuators (change the outputs)  in order to close the gap from the current estimated state and the reference state (\textit{Input}).
 
 The current state of the art is that control engineers design control tasks as periodic computations then they specify the required periodic frequency for the task and software engineers design a scheduler that ensures that the periodic frequency requirements are met usually using pre-computed knowledge of the expected (maximum) duration of the tasks.
 We claim that for control systems we can achieve better performance by using richer and more flexible set of requirements for the tasks. Specifically, we will develop tools with which the control engineers can specify in a natural way features of their control loop that the scheduler will use to allow for dynamic schedules that guarantee required control performance. 
@@ -155,7 +154,7 @@ Our research plan consists of: (1) Designing a methodology for effective allocat
         
     \end{tikzpicture}
     
-    \caption{The controller framework we will implement, the \textit{scheduler} will allocate CPU time ($\langle time,cov \rangle$) for the \textit{Computer Vision} task base on the state estimation certainty using guarded Automata.
+    \caption{The controller framework we will implement, the \textit{scheduler} will allocate CPU time ($\langle time,cov(v) \rangle$) for the \textit{Computer Vision} task base on the state estimation certainty using guarded Automata.
     \label{fig:hybrid_loop}}
 \end{figure}
 
