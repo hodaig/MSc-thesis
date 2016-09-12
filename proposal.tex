@@ -89,7 +89,7 @@ Some, more conservative, control engineers prefers to isolate the heavy computat
 In Section~\ref{sec:Research Plan} we suggest a novel framework model for such systems that we will implement in this thesis.
 
 \subsection{Nano-Satellite}
-Another interesting case study we will examine is the control of a nano-satellite, in particular scheduling the sensing tasks of \textit{IAI}\footnote{IAI: Israel Aerospace Industries} nano satellites. Their satellites are controlled by a small and relatively slow processor, and the developers say that the main issue in programing the satellite is how to schedule the sensing tasks.
+Another interesting case study we will examine is the control of a nano-satellite, in particular scheduling the sensing tasks of IAI (Israel Aerospace Industries) nano satellites. Their satellites are controlled by a small and relatively slow processor, and the developers say that the main issue in programing the satellite is how to schedule the sensing tasks.
 The common approach they are using is to periodically schedule all the sensing task every iteration, and they say that this is the main computational consumption and is too much for their slow processor.
 
 We think that lots of the sensing are unnecessary and the controlling task can be achieved without "most up-to-date" information, some times we can base on good estimation of the sensing value or even use the last value. Although Vision based drones is our main case study, we will also check the possibility to improve the nano-satellite issue with our framework.
@@ -226,10 +226,10 @@ The control task itself (\textit{Control Law} in Figure~\ref{fig:general_hybrid_
 
 %Optimal estimation or optimal control low is not guarantee the overall  optimal feedback controller, but as Kalman prove, 
 The control task is usually a very low CPU consumer and been well studied~\cite{Bennett}~\cite{Cervin}, hence, in this thesis we will not be concentrated on the control task, we will use the same controller that APM are using.
-APM use a common used and well known technique from control theory called {\textbf{PID}\footnote{PID controller - A proportional-integral-derivative controller}}.
+APM use a common used and well known technique from control theory called PID, A proportional-integral-derivative controller.
 In this technique the control output is based on the physical knowledge of the system dynamics, and have 3 variable parameters (P, I and D) that define the controller convergence behavior.
 
-We will also try to use ``adjustable'' {\textbf{LQR}\footnote{LQR - Linear-quadratic regulator}}.
+We will also try to use ``adjustable'' LQR (Linear-quadratic regulator).
 LQR is an optimal controller that take into account the level of certainty of the state estimation. 
 Is Usually hard task to know the certainty of estimation, but in our case we need to calculate it anyway, and we mark it as $cov(x-\tilde{x})$.
 We will make LQR ``adjustable'' in the sense that each iteration the controller will consider the new (variable) $cov(x-\tilde{x})$.
