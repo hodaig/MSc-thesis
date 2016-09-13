@@ -325,7 +325,7 @@ In this example, execute $s_{0.7}$ is always allowed but if we need faster sensi
 
 The estimated estimation error ($estCov$ in the figure) is, in this case, the estimation error variance ($cov(x-\tilde{x})$ in Figure~\ref{fig:hybrid_loop}). 
 %if $cov(x-\tilde{x})$ is small then $est_{good} = true$, if is normal then $est_{normal} = true$ end $est_{bad} = true$ if $cov(x-\tilde{x})$ is  bigger then some boundary.
-This value ($estCov~=~cov(x~-~\tilde{x})$) is calculated by the state estimator task (Section~\ref{sec:estimator}) and is passed to the scheduler as discussed before.
+\\This value ($estCov~=~cov(x~-~\tilde{x})$) is calculated by the state estimator task (Section~\ref{sec:estimator}) and is passed to the scheduler as discussed before.
 
 Each of this operation modes ($s_{0.7}$ and $s_{0.2}$) have different accuracy, specified by $cov(v)$ in Figure~\ref{fig:hybrid_loop}, and if we want to get optimal estimation the state estimator mast be configure correspondingly, i.e., the sensing error variance should be adjusted to the correct value ($cov(s_{0.7})$), an easy solution for specifying the different configurations is by the guarded automata shown in Figure~\ref{fig:sched_estimator_auto}, which defines two operation modes of the state estimator, $est_1$ and $est_2$, that correspond to $cov(s_{0.7})$ and $cov(s_{0.2})$. So of course if we sense in mode $s_{0.7}$ we must estimate with mode $est_1$ that has the correct configurations for $s_{0.7}$, and if we sense in mode $s_{0.2}$ we must estimate with mode $est_2$.
 
@@ -334,21 +334,42 @@ Each of this operation modes ($s_{0.7}$ and $s_{0.2}$) have different accuracy, 
 In this preliminary phase we searched for the appropriate environment for experimentation. After research we decided to use Raspberry~Pi with navio~\cite{navio} board based drone with the commonly used and open-source controller software APM~\cite{APM}.
 We managed to build and fly the complete drone, we dived into the APM code, we understand the code structure, and we are familiar with the relevant parts that we want to change.
 
-We have clear picture of our research plan for the near future in order to get basic results with the new schedule frame fork.
-In summary, our research plan is as follows.
-\begin{itemize}
-	\item Choose the appropriate development environment. Done (APM based drones).
-	\item Be familiar with the development environment, and make sure that we are able to adapt the system to our needs. Done.
-	\item Plan all the control components in order to achieve our case study goals. Done (see Section~\ref{sec:estimator}, Section~\ref{sec:sensors} and Section~\ref{sec:control}).
-	\item Plan the new scheduler detail behavior, and it's interaction with the control components. Done (see Section~\ref{sec:scheduler}).
-	\item Detail planing of the scheduler interface implementation and adaptation in the code. Done.
-	\item Implement the new scheduler and replace the original APM scheduler (manually transform each task periodical requirements to automata based requirements). Expected two weeks.
-	\item Develop and implement the vision based sensor component. We plane to base on the buit-in Matlab vision abilities and use SimuCopter~\cite{SimuCopter} to integrate it in the APM program (see below). Expected 1-2 months.
-	\item Grub statistics data and fine-tuning the vision component. Expected one month.
-	\item Adjust the state estimator as explain in Section~\ref{sec:estimator}, and combine all together using the new scheduler. Expected two weeks.
-	\item Check with a wide range of environmental conditions and a wide range of requirements (automatas), and of course grub and summarize the results. Expected two months.
-	\item Write the thesis report. Expected two months.
-\end{itemize}
+We now have clear picture of our research plan for the near future in order to get basic results with the new schedule frame fork.
+In summary, our research plan is describe in Table~\ref{tab:Research-plan}.
+
+\begin{table}[]
+    \centering
+    \label{tab:Research-plan}
+    
+    \begin{tabular}{ | p{8cm} | p{1.7cm} | p{1.8cm} |}
+        \hline
+        Task  & Expected work time & completion (\%) \\ \hline
+        Choose the appropriate development environment. (APM based drones) & one month & \textbf{100\%}  \\ \hline
+         
+        Be familiar with the development environment, and make sure that we are able to adapt the system to our needs. & three month & \textbf{90\%} \\ \hline
+          
+        Plan all the control components in order to achieve our case study goals. (see Sections~\ref{sec:estimator}, \ref{sec:sensors} and \ref{sec:control}) & three months & \textbf{100\%} \\ \hline
+         
+        Plan the new scheduler detail behavior, and it’s interaction with the control components. (see Section~\ref{sec:scheduler}) & two months & \textbf{90\%} \\ \hline
+         
+        Detail planing of the scheduler interface implementation and adaptation in the code. & one month & \textbf{80\%} \\ \hline
+         
+        Implement the new scheduler and replace the original APM scheduler (manually transform each task periodical requirements to automata based requirements). & two weeks & 0\% \\ \hline
+         
+        Develop and implement the vision based sensor component. We plan to base on the buit-in Matlab vision abilities and use SimuCopter~\cite{SimuCopter}
+        to integrate it in the APM program. & 1-2 months. & 20\% \\ \hline
+         
+        Grub statistics data and fine-tuning the vision component. & one month & 0\% \\ \hline
+         
+        Adjust the state estimator as explain in Section~\ref{sec:estimator}, and combine all together using the new scheduler. & two weeks & 0\% \\ \hline
+         
+        Check with a wide range of environmental conditions and a wide range of requirements (automatas), and of course grub and summarize the results. & two months & 0\% \\ \hline
+        
+        Write the thesis report. & two months & 10\% \\ \hline
+    \end{tabular}
+    
+    \caption{Research plan}
+\end{table}
 
 As part of the preliminary work we developed (with two undergraduate students, as part of their final project in software engineering) the \textbf{SimuCopter}~\cite{SimuCopter} framework that allows to program our drone  (or any other APM based drones) directly by Matlab Simulink model, using a code generation logic.
 We will add to that framework interfaces and tools for using our new scheduler capabilities embedded in the simulink diagrams, and give the control engineers a complete tool for developing control software. We also experimented with iplementing computer vision algorithms with this tool.
