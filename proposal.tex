@@ -92,10 +92,10 @@ Some, more conservative, control engineers prefers to isolate the heavy computat
 In Section~\ref{sec:Research Plan} we propose an alternative framework for such systems, to be implement in the proposed thesis, that allows to integrate the heavy computations in the control loop in an efficient way that, we believe, will allow fo cutting the costs involved in adding a dedicated boards or in dedicating a computation core.
 
 \subsection{Nano-Satellite}
-Another interesting case study we will examine is the control of a nano-satellite, in particular scheduling the sensing tasks of IAI (Israel Aerospace Industries) nano satellites. Their satellites are controlled by a small and relatively slow processor, and the developers say that the main issue in programing the satellite is how to schedule the sensing tasks.
-The common approach they are using is to periodically schedule all the sensing task every iteration, and they say that this is the main computational consumption and is too much for their slow processor.
+Another case study we will examine is the control of a nano-satellite. Specifically, we will examine how our new approach can be applied in the context of scheduling the sensing tasks of IAI (Israel Aerospace Industries) nano satellites. Their satellites are controlled by a small, relatively slow, processor and the developers say that a central issue in programing the satellite is how to schedule  sensing tasks.
+The current approach they are using is to periodically schedule all the sensing task every iteration, and they say that, because of sensor redundancy, this is the main computational consumption and is becoming to be too much for the capabilities of their processor.
 
-We think that lots of the sensing are unnecessary and the controlling task can be achieved without "most up-to-date" information, some times we can base on good estimation of the sensing value or even use the last value. Although Vision based drones is our main case study, we will also check the possibility to improve the nano-satellite issue with our framework.
+We think that much of the sensing is unnecessary and that the controlling task can be achieved without ``most up-to-date" information. Some times we can base on good estimation of the sensing value or even use the last value. As a secondary goal to our main goal of designing a good architecture for vision based drones (our main case study), we will also check the possibility to improve the nano-satellite issue with our framework.
 
 \section{Research Plan}
 \label{sec:Research Plan}
