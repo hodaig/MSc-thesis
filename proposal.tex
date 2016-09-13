@@ -75,7 +75,8 @@ We claim that we can achieve better performance and better resource utilization 
         \draw [arrowB] (estimator) -| (control);
     \end{tikzpicture}
     
-    \caption{A typical control loop system.
+    \caption{A typical close feedback control loop where the physical plant (\textit{System}) is monitored via an array of sensors (\textit{Sensing}) which produce noisy sample of the state variables. 
+    And after sensing, \textit{State Estimator} aggregates the raw data from all the sensors and produce estimation of the current state. Then the \textit{Control Law} entity uses actuators (not marked here for simplicity matters) in order to close the gap between the current estimated state and the reference state (\textit{Input}).
     \label{fig:control loop}}
 \end{figure}
 
