@@ -35,20 +35,23 @@
 
 \section{Background and Problem Statement}
 \label{sec:Background}
-Today's computer power allows for consolidation of controllers allowing systems where a single computer regulates many control loops, each with its varying needs of computation resources.
+Today's computer power allows for consolidation of controllers towards systems where a single computer regulates many control loops, each with its varying needs of computation resources.
 This brings two research challenges that we intend to attack in the proposed thesis:
 \begin{itemize}
 	\item How to schedule control tasks in order to achieve good performance in terms of control measures (overshoot, convergence speed, etc.)?
 	\item What is a good interface for co-design of scheduling and control?
 \end{itemize}
 
-While it is possible to build control systems using standard operating systems, either real-time or desktop, with static or with dynamic scheduling schemes, there is an agreed opinion in the control community that these do not serve well for the purpose outlined above 
-(`The delay and jitter introduced by the computer system can lead to significant performance degradation. To achieve good performance in systems with limited computer resources, the constraints of the implementation platform must be taken into account at design time. To facilitate this, software tools are needed to analyze and simulate how timing affects control performance.'~\cite{Cervin}) 
-\cite{RTComposer} \cite{Shlomo} \cite{UPenn-Pant}. 
-For example, desktop type operating systems (Windows, Linux, etc.) schedule for computational efficiency but do not allow for worst-case performance guarantees of the individual tasks that regulate the loops. On the other hand, real-time operating systems sacrifice some efficiency for timing predictability but the type of timing guarantees that such systems provide are not enough to be used for guaranteeing control performance. When using such operating systems for control engineers usually apply controllers that work in a fixed periodic manner so that control behavior becomes deterministic and control performance can be guaranteed. This is not efficient because resources can be better utilized if controllers act at higher frequencies when only when needed. 
+While it is possible to build control systems using standard operating systems, either real-time or desktop, with static or with dynamic scheduling schemes, there is an agreed opinion in the control community that these do not serve well for the purpose outlined above. For example, in~\cite{Cervin}, the authors say: 
+\begin{quotation}
+`The delay and jitter introduced by the computer system can lead to significant performance degradation. To achieve good performance in systems with limited computer resources, the constraints of the implementation platform must be taken into account at design time.'
+\end{quotation}
+Similar views are expressed also in other papers~\cite{RTComposer,Shlomo,UPenn-Pant}.
+ 
+Desktop type operating systems (Windows, Linux, etc.) schedule for computational efficiency but do not allow for worst-case performance guarantees of the individual tasks that regulate the loops.  Real-time operating systems, on the other hand, sacrifice some efficiency for timing predictability but the type of timing guarantees that such systems provide are not enough to be used for guaranteeing control performance. When using such operating systems for control engineers usually apply controllers that work in a fixed periodic manner so that control behavior becomes deterministic and control performance can be guaranteed. This is not efficient because resources can be better utilized if controllers act at higher frequencies when only when needed. 
 In this work we will develop methods to combine the efficiency of desktop operating systems with the predictability of real-time operating systems in a way that is more suitable for control systems then periods and deadlines
 
-The control loops that we are analyzing have the architecture shown in Figure~\ref{fig:control loop}. 
+The control loops that we will consider in the proposed thesis are of the architectural form shown in Figure~\ref{fig:control loop}. 
 We assume a close feedback control loop where the physical plant, \textit{System}, is monitored via an array of sensors (\textit{Sensing}) which produce raw data that represents some state variables. 
 We assume uncertainty observations from the sensors so after sensing the \textit{State Estimator} aggregates the raw data from all the sensors and makes an educated estimation of the current state in order to improve the state estimation. Then the \textit{Control Law} will use actuators (change the outputs)  in order to close the gap from the current estimated state and the reference state (\textit{Input}).
 
